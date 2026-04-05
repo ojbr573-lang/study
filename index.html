@@ -2,32 +2,42 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مساعد الدراسة الذكي</title>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://apis.google.com/js/api.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; padding: 20px; text-align: center; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        h2 { color: #2c3e50; }
-        input, select { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
-        .btn-sync { background: #4285F4; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
-        .btn-sync:hover { background: #357abd; }
-        #status { margin-top: 15px; font-size: 0.9em; color: #666; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; padding: 20px; text-align: center; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        h1 { color: #1a73e8; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+        th { background-color: #f8f9fa; }
+        input, button { padding: 10px; margin: 5px; border-radius: 5px; border: 1px solid #ccc; }
+        .btn-add { background: #34a853; color: white; cursor: pointer; border: none; }
+        .btn-sync { background: #4285f4; color: white; cursor: pointer; border: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>تطوير البيج: المزامنة المباشرة</h2>
-    <p>أضف موعدك وسينتقل لتقويم هاتفك فوراً</p>
+    <h1>مساعد الدراسة الذكي 🎓</h1>
     
-    <input type="text" id="eventTitle" placeholder="اسم المادة أو الامتحان">
-    <input type="datetime-local" id="eventTime">
-    
-    <button class="btn-sync" onclick="handleAuthClick()">حفظ في تقويم جوجل مباشرة 🚀</button>
-    
-    <div id="status">جاهز للربط السحابي...</div>
+    <div id="input-section">
+        <input type="text" id="subject" placeholder="اسم المادة">
+        <input type="datetime-local" id="date">
+        <button class="btn-add" onclick="addToTable()">إضافة للجدول</button>
+    </div>
+
+    <table id="studyTable">
+        <thead>
+            <tr>
+                <th>المادة</th>
+                <th>التاريخ والوقت</th>
+                <th>المزامنة مع الهاتف</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- سيتم إضافة البيانات هنا -->
+        </tbody>
+    </table>
 </div>
 
 <script>
@@ -37,57 +47,32 @@
     const SCOPES = "https://www.googleapis.com/auth/calendar.events";
 
     let tokenClient;
-    let gapiInited = false;
-    let gsiInited = false;
 
-    function gapiLoaded() { gapi.load('client', intializeGapiClient); }
-    async function intializeGapiClient() {
-        await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] });
-        gapiInited = true;
-    }
-    function gsiLoaded() {
-        tokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: CLIENT_ID, scope: SCOPES, callback: '', 
-        });
-        gsiInited = true;
+    function gapiLoaded() { gapi.load('client', async () => { await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] }); }); }
+    function gsiLoaded() { tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: '' }); }
+
+    function addToTable() {
+        const subject = document.getElementById('subject').value;
+        const date = document.getElementById('date').value;
+        if(!subject || !date) return alert("عبئ البيانات!");
+
+        const tbody = document.querySelector('#studyTable tbody');
+        const row = tbody.insertRow();
+        row.innerHTML = `<td>${subject}</td><td>${date}</td><td><button class="btn-sync" onclick="syncEvent('${subject}', '${date}')">مزامنة الآن 🚀</button></td>`;
     }
 
-    function handleAuthClick() {
+    function syncEvent(title, startTime) {
         tokenClient.callback = async (resp) => {
-            if (resp.error !== undefined) throw (resp);
-            await addEventToCalendar();
+            if (resp.error) return;
+            const event = {
+                'summary': title,
+                'start': { 'dateTime': new Date(startTime).toISOString(), 'timeZone': 'Asia/Amman' },
+                'end': { 'dateTime': new Date(new Date(startTime).getTime() + 3600000).toISOString(), 'timeZone': 'Asia/Amman' }
+            };
+            await gapi.client.calendar.events.insert({ 'calendarId': 'primary', 'resource': event });
+            alert("تمت الإضافة لتقويمك بنجاح!");
         };
-
-        if (gapi.client.getToken() === null) {
-            tokenClient.requestAccessToken({prompt: 'consent'});
-        } else {
-            tokenClient.requestAccessToken({prompt: ''});
-        }
-    }
-
-    async function addEventToCalendar() {
-        const title = document.getElementById('eventTitle').value;
-        const startTime = document.getElementById('eventTime').value;
-
-        if (!title || !startTime) {
-            alert("يرجى تعبئة البيانات أولاً");
-            return;
-        }
-
-        const event = {
-            'summary': title,
-            'start': { 'dateTime': new Date(startTime).toISOString(), 'timeZone': 'Asia/Amman' },
-            'end': { 'dateTime': new Date(new Date(startTime).getTime() + 3600000).toISOString(), 'timeZone': 'Asia/Amman' }
-        };
-
-        try {
-            const response = await gapi.client.calendar.events.insert({ 'calendarId': 'primary', 'resource': event });
-            document.getElementById('status').innerText = "✅ تم الحفظ في تقويمك بنجاح!";
-            alert("تمت الإضافة! تفقد تقويم هاتفك الآن.");
-        } catch (err) {
-            document.getElementById('status').innerText = "❌ خطأ في المزامنة.";
-            console.error(err);
-        }
+        tokenClient.requestAccessToken({prompt: 'consent'});
     }
 </script>
 
