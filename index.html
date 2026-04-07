@@ -1,1374 +1,957 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>مذاكرتي</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <style>
-    /* ===== CSS Variables ===== */
-    :root {
-      --primary: #4f46e5;
-      --primary-light: #818cf8;
-      --primary-dark: #3730a3;
-      --secondary: #06b6d4;
-      --accent: #f59e0b;
-      --danger: #ef4444;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --bg: #0f172a;
-      --bg2: #1e293b;
-      --bg3: #334155;
-      --card: #1e293b;
-      --card2: #273548;
-      --border: #334155;
-      --text: #f1f5f9;
-      --text2: #94a3b8;
-      --text3: #64748b;
-      --radius: 14px;
-      --radius-sm: 8px;
-      --shadow: 0 4px 24px rgba(0,0,0,0.4);
-      --transition: 0.2s ease;
-      --navbar-h: 68px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+<meta name="theme-color" content="#7c6fff">
+<title>مذاكرتي - مدير المذاكرة والعادات</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0b14;
+  --card: #12141f;
+  --card2: #1a1d2e;
+  --accent: #7c6fff;
+  --accent-light: #9b90ff;
+  --a2: #ff5f7e;
+  --a3: #3dd68c;
+  --warn: #ffb84d;
+  --blue: #4da6ff;
+  --purple: #c084fc;
+  --text: #eeeef5;
+  --text-dim: #a0a0bb;
+  --muted: #6b6b8a;
+  --border: #22253a;
+  --success: #10b981;
+  --danger: #ef4444;
+}
 
-    /* ===== Reset & Base ===== */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
-    button { font-family: 'Cairo', sans-serif; cursor: pointer; border: none; outline: none; }
-    input, select, textarea { font-family: 'Cairo', sans-serif; outline: none; border: none; }
-    a { text-decoration: none; color: inherit; }
-    ul { list-style: none; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-    /* ===== Scrollbar ===== */
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: var(--bg2); }
-    ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 4px; }
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Cairo', sans-serif;
+  overflow: hidden;
+}
 
-    /* ===== App Layout ===== */
-    #app { display: flex; flex-direction: column; min-height: 100vh; }
+#app {
+  height: 100%;
+  overflow-y: auto;
+  padding-bottom: 70px;
+  scroll-behavior: smooth;
+}
 
-    /* ===== Top Header ===== */
-    .top-header {
-      position: sticky; top: 0; z-index: 100;
-      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-      padding: 14px 20px;
-      display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 2px 16px rgba(79,70,229,0.4);
-    }
-    .top-header h1 { font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
-    .top-header .subtitle { font-size: 0.72rem; color: rgba(255,255,255,0.7); }
-    .header-actions { display: flex; gap: 8px; }
-    .header-btn {
-      background: rgba(255,255,255,0.15); color: #fff; border-radius: var(--radius-sm);
-      padding: 7px 12px; font-size: 0.78rem; font-weight: 600;
-      transition: background var(--transition);
-      display: flex; align-items: center; gap: 5px;
-    }
-    .header-btn:hover { background: rgba(255,255,255,0.25); }
+.panel {
+  display: none;
+  padding: 20px 16px 80px;
+  animation: fadeIn 0.3s ease;
+}
 
-    /* ===== Pages ===== */
-    .page { display: none; flex: 1; padding: 16px 16px calc(var(--navbar-h) + 16px); overflow-y: auto; }
-    .page.active { display: block; }
+.panel.active {
+  display: block;
+}
 
-    /* ===== Bottom Navbar ===== */
-    .bottom-nav {
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
-      height: var(--navbar-h);
-      background: var(--bg2);
-      border-top: 1px solid var(--border);
-      display: flex; align-items: stretch;
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
-    }
-    .nav-item {
-      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 3px; color: var(--text3); font-size: 0.68rem; font-weight: 600;
-      transition: color var(--transition); cursor: pointer;
-      position: relative;
-    }
-    .nav-item .nav-icon { font-size: 1.5rem; line-height: 1; transition: transform var(--transition); }
-    .nav-item.active { color: var(--primary-light); }
-    .nav-item.active .nav-icon { transform: translateY(-2px); }
-    .nav-item.active::after {
-      content: ''; position: absolute; top: 0; left: 20%; right: 20%;
-      height: 2px; background: var(--primary-light); border-radius: 0 0 4px 4px;
-    }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-    /* ===== Section Headers ===== */
-    .section-title {
-      font-size: 1.1rem; font-weight: 700; color: var(--text);
-      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
-    }
-    .section-title span { color: var(--primary-light); }
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
 
-    /* ===== Cards ===== */
-    .card {
-      background: var(--card); border-radius: var(--radius);
-      padding: 16px; margin-bottom: 12px;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-    }
-    .card-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 10px; }
+.topbar h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 
-    /* ===== Buttons ===== */
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-      padding: 10px 18px; border-radius: var(--radius-sm);
-      font-size: 0.85rem; font-weight: 700;
-      transition: all var(--transition);
-    }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
-    .btn-secondary { background: var(--bg3); color: var(--text); }
-    .btn-secondary:hover { background: #475569; }
-    .btn-danger { background: var(--danger); color: #fff; }
-    .btn-danger:hover { background: #dc2626; }
-    .btn-success { background: var(--success); color: #fff; }
-    .btn-success:hover { background: #059669; }
-    .btn-warning { background: var(--warning); color: #1a1a1a; }
-    .btn-warning:hover { background: #d97706; }
-    .btn-full { width: 100%; }
-    .btn-sm { padding: 6px 12px; font-size: 0.78rem; }
-    .btn-icon { padding: 8px; border-radius: var(--radius-sm); font-size: 1rem; }
+.add-btn {
+  background: var(--accent);
+  border: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  font-size: 28px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(124, 111, 255, 0.3);
+}
 
-    /* ===== Form Controls ===== */
-    .form-group { margin-bottom: 12px; }
-    .form-label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
-    .form-input, .form-select, .form-textarea {
-      width: 100%; background: var(--bg3); color: var(--text);
-      border: 1px solid var(--border); border-radius: var(--radius-sm);
-      padding: 10px 12px; font-size: 0.85rem;
-      transition: border-color var(--transition);
-    }
-    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--primary-light); }
-    .form-textarea { resize: vertical; min-height: 80px; }
-    .form-select option { background: var(--bg2); }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.add-btn:active {
+  transform: scale(0.95);
+}
 
-    /* ===== Modal ===== */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0; z-index: 999;
-      background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
-      align-items: flex-end; justify-content: center;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal {
-      background: var(--bg2); border-radius: var(--radius) var(--radius) 0 0;
-      padding: 20px; width: 100%; max-width: 520px;
-      max-height: 90vh; overflow-y: auto;
-      animation: slideUp 0.25s ease;
-    }
-    @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-    .modal-title { font-size: 1rem; font-weight: 700; }
-    .modal-close { background: var(--bg3); color: var(--text2); border-radius: 50%; width: 30px; height: 30px; font-size: 1rem; }
-    .modal-close:hover { color: var(--text); }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.2s;
+}
 
-    /* ===== Toast ===== */
-    #toast-container { position: fixed; top: 16px; right: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
-    .toast {
-      background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm);
-      padding: 12px 16px; font-size: 0.82rem; font-weight: 600;
-      box-shadow: var(--shadow); animation: fadeInRight 0.3s ease;
-      display: flex; align-items: center; gap: 8px; min-width: 220px;
-    }
-    .toast.success { border-color: var(--success); color: var(--success); }
-    .toast.error { border-color: var(--danger); color: var(--danger); }
-    .toast.info { border-color: var(--primary-light); color: var(--primary-light); }
-    @keyframes fadeInRight { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
 
-    /* ===== Badge / Chip ===== */
-    .badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: 3px 8px; border-radius: 20px; font-size: 0.72rem; font-weight: 700;
-    }
-    .badge-primary { background: rgba(79,70,229,0.2); color: var(--primary-light); }
-    .badge-success { background: rgba(16,185,129,0.2); color: var(--success); }
-    .badge-warning { background: rgba(245,158,11,0.2); color: var(--warning); }
-    .badge-danger { background: rgba(239,68,68,0.2); color: var(--danger); }
-    .badge-secondary { background: var(--bg3); color: var(--text2); }
+.card-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
 
-    /* ===== Progress Bar ===== */
-    .progress-bar { height: 6px; background: var(--bg3); border-radius: 10px; overflow: hidden; }
-    .progress-fill { height: 100%; border-radius: 10px; transition: width 0.4s ease; }
+.progress-bar {
+  background: var(--card2);
+  border-radius: 10px;
+  height: 8px;
+  overflow: hidden;
+  margin: 12px 0;
+}
 
-    /* ===== Divider ===== */
-    .divider { height: 1px; background: var(--border); margin: 14px 0; }
+.progress-fill {
+  background: linear-gradient(90deg, var(--a3), var(--accent));
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.3s;
+}
 
-    /* ========================================
-       PAGE: HOME
-       ======================================== */
-    .home-hero {
-      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-      border-radius: var(--radius); padding: 20px;
-      margin-bottom: 14px; position: relative; overflow: hidden;
-    }
-    .home-hero::before {
-      content: '📚'; position: absolute; right: -10px; top: -10px;
-      font-size: 6rem; opacity: 0.08;
-    }
-    .home-hero h2 { font-size: 1.2rem; font-weight: 800; color: #fff; }
-    .home-hero p { font-size: 0.8rem; color: rgba(255,255,255,0.75); margin-top: 4px; }
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-    .stat-card {
-      background: var(--card); border-radius: var(--radius);
-      padding: 14px; border: 1px solid var(--border);
-      display: flex; flex-direction: column; gap: 4px;
-    }
-    .stat-card .stat-num { font-size: 1.6rem; font-weight: 800; color: var(--primary-light); }
-    .stat-card .stat-label { font-size: 0.72rem; color: var(--text2); }
-    .upcoming-list { display: flex; flex-direction: column; gap: 8px; }
-    .upcoming-item {
-      background: var(--card); border-radius: var(--radius-sm);
-      padding: 12px; border: 1px solid var(--border);
-      display: flex; align-items: flex-start; gap: 10px;
-    }
-    .upcoming-item .ui-icon { font-size: 1.3rem; flex-shrink: 0; }
-    .upcoming-item .ui-info { flex: 1; }
-    .upcoming-item .ui-name { font-size: 0.85rem; font-weight: 700; }
-    .upcoming-item .ui-date { font-size: 0.72rem; color: var(--text2); margin-top: 2px; }
-    .upcoming-item .ui-days { font-size: 0.72rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; }
-    .days-urgent { background: rgba(239,68,68,0.2); color: var(--danger); }
-    .days-soon { background: rgba(245,158,11,0.2); color: var(--warning); }
-    .days-ok { background: rgba(16,185,129,0.2); color: var(--success); }
-    .empty-state { text-align: center; padding: 32px 16px; color: var(--text3); }
-    .empty-state .es-icon { font-size: 3rem; margin-bottom: 10px; }
-    .empty-state p { font-size: 0.85rem; }
+.stats-grid {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
 
-    /* ========================================
-       PAGE: SUBJECTS
-       ======================================== */
-    .subjects-grid { display: flex; flex-direction: column; gap: 12px; }
-    .subject-card {
-      background: var(--card); border-radius: var(--radius);
-      border: 1px solid var(--border); overflow: hidden;
-    }
-    .subject-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 16px;
-    }
-    .subject-color-bar { width: 4px; height: 40px; border-radius: 4px; flex-shrink: 0; margin-left: 10px; }
-    .subject-info { flex: 1; }
-    .subject-name { font-size: 0.95rem; font-weight: 700; }
-    .subject-meta { font-size: 0.72rem; color: var(--text2); margin-top: 3px; }
-    .subject-actions { display: flex; gap: 6px; }
-    .subject-body { padding: 0 16px 14px; }
-    .subject-stats { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
-    .chapters-list { display: flex; flex-direction: column; gap: 6px; }
-    .chapter-item {
-      background: var(--bg3); border-radius: var(--radius-sm);
-      padding: 8px 12px; display: flex; align-items: center; gap: 8px;
-    }
-    .chapter-item .ch-check {
-      width: 20px; height: 20px; border-radius: 50%;
-      background: var(--bg2); border: 2px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; flex-shrink: 0; font-size: 0.7rem;
-      transition: all var(--transition);
-    }
-    .chapter-item.done .ch-check { background: var(--success); border-color: var(--success); color: #fff; }
-    .chapter-item .ch-name { flex: 1; font-size: 0.82rem; }
-    .chapter-item.done .ch-name { text-decoration: line-through; color: var(--text3); }
-    .chapter-item .ch-del { color: var(--text3); font-size: 0.9rem; background: none; }
-    .chapter-item .ch-del:hover { color: var(--danger); }
+.stat-card {
+  background: var(--card2);
+  border-radius: 16px;
+  padding: 12px;
+  flex: 1;
+  text-align: center;
+}
 
-    /* Subject colors */
-    .color-dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; cursor: pointer; border: 2px solid transparent; }
-    .color-dot.selected { border-color: #fff; }
-    .color-picker { display: flex; gap: 8px; flex-wrap: wrap; padding: 6px 0; }
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--accent);
+}
 
-    /* ========================================
-       PAGE: REMINDERS
-       ======================================== */
-    .reminders-list { display: flex; flex-direction: column; gap: 10px; }
-    .reminder-card {
-      background: var(--card); border-radius: var(--radius);
-      border: 1px solid var(--border); padding: 14px;
-      position: relative; overflow: hidden;
-    }
-    .reminder-card::before {
-      content: ''; position: absolute; right: 0; top: 0; bottom: 0;
-      width: 4px;
-    }
-    .reminder-card.type-exam::before { background: var(--danger); }
-    .reminder-card.type-quiz::before { background: var(--warning); }
-    .reminder-card.type-assignment::before { background: var(--secondary); }
-    .reminder-card.type-other::before { background: var(--primary-light); }
-    .reminder-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-    .reminder-name { font-size: 0.9rem; font-weight: 700; }
-    .reminder-subject { font-size: 0.72rem; color: var(--text2); margin-top: 2px; }
-    .reminder-date { font-size: 0.75rem; color: var(--text2); margin-top: 6px; }
-    .reminder-stages { margin-top: 10px; }
-    .stage-list { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
-    .stage-item {
-      display: flex; align-items: center; gap: 6px;
-      background: var(--bg3); border-radius: var(--radius-sm);
-      padding: 6px 10px; font-size: 0.78rem;
-    }
-    .stage-item .si-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .stage-item .si-label { flex: 1; }
-    .stage-item .si-date { color: var(--text2); font-size: 0.72rem; }
-    .stage-item.si-done { opacity: 0.5; }
-    .stage-item.si-done .si-label { text-decoration: line-through; }
-    .reminder-footer { margin-top: 10px; display: flex; align-items: center; justify-content: space-between; }
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
 
-    /* ========================================
-       PAGE: HABITS
-       ======================================== */
-    .habits-list { display: flex; flex-direction: column; gap: 10px; }
-    .habit-card {
-      background: var(--card); border-radius: var(--radius);
-      border: 1px solid var(--border); padding: 14px;
-      position: relative; overflow: hidden;
-    }
-    .habit-header { display: flex; align-items: center; justify-content: space-between; }
-    .habit-info { flex: 1; }
-    .habit-name { font-size: 0.95rem; font-weight: 700; }
-    .habit-times { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
-    .habit-time-chip {
-      background: rgba(79,70,229,0.2); color: var(--primary-light);
-      border-radius: 20px; padding: 3px 10px; font-size: 0.75rem; font-weight: 700;
-    }
-    .habit-check-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-    .habit-check-btn {
-      flex: 1; min-width: 80px; padding: 8px;
-      border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: 700;
-      border: 1.5px solid var(--border); background: var(--bg3); color: var(--text2);
-      transition: all var(--transition); display: flex; flex-direction: column; align-items: center; gap: 2px;
-    }
-    .habit-check-btn .hcb-time { font-size: 0.85rem; }
-    .habit-check-btn .hcb-status { font-size: 0.65rem; }
-    .habit-check-btn.done { border-color: var(--success); background: rgba(16,185,129,0.15); color: var(--success); }
-    .habit-check-btn:not(.done):hover { border-color: var(--primary-light); color: var(--primary-light); }
-    .habit-streak { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 0.78rem; color: var(--text2); }
-    .habit-streak .streak-fire { font-size: 1rem; }
-    .habit-actions { display: flex; gap: 6px; align-items: center; }
+/* Subject styles */
+.subject-item {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-right: 4px solid var(--accent);
+}
 
-    /* Habit today summary */
-    .habits-today-banner {
-      background: linear-gradient(135deg, #0f4c81, #1e293b);
-      border: 1px solid rgba(6,182,212,0.3);
-      border-radius: var(--radius); padding: 14px;
-      margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;
-    }
-    .htb-left h3 { font-size: 0.9rem; font-weight: 700; }
-    .htb-left p { font-size: 0.75rem; color: var(--text2); margin-top: 3px; }
-    .htb-right { text-align: center; }
-    .htb-right .htb-count { font-size: 1.8rem; font-weight: 800; color: var(--secondary); }
-    .htb-right .htb-label { font-size: 0.65rem; color: var(--text2); }
+.subject-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-    /* ===== Notification Permission Banner ===== */
-    #notif-banner {
-      background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05));
-      border: 1px solid rgba(245,158,11,0.3);
-      border-radius: var(--radius); padding: 12px 14px;
-      display: flex; align-items: center; gap: 10px;
-      margin-bottom: 14px; font-size: 0.8rem;
-    }
-    #notif-banner .nb-icon { font-size: 1.4rem; flex-shrink: 0; }
-    #notif-banner .nb-text { flex: 1; color: var(--text2); }
-    #notif-banner .nb-text strong { color: var(--text); }
+.subject-emoji {
+  font-size: 1.3rem;
+}
 
-    /* ===== Responsive helpers ===== */
-    @media (min-width: 480px) {
-      .stats-grid { grid-template-columns: repeat(4, 1fr); }
-    }
-  </style>
+.subject-days {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+/* Reminder styles */
+.reminder-card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.reminder-title {
+  font-weight: 700;
+}
+
+.reminder-date {
+  font-size: 0.8rem;
+  color: var(--accent);
+  margin-top: 6px;
+}
+
+.stage-badge {
+  display: inline-block;
+  background: var(--card2);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  margin-top: 8px;
+}
+
+/* Habit styles */
+.habit-card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.2s;
+  border: 1px solid var(--border);
+}
+
+.habit-card.completed {
+  background: linear-gradient(135deg, var(--card), rgba(61, 214, 140, 0.1));
+  border-color: var(--a3);
+}
+
+.habit-check {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--card2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.habit-check.done {
+  background: var(--a3);
+  border-color: var(--a3);
+}
+
+.habit-check.done::after {
+  content: "✓";
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.habit-info {
+  flex: 1;
+}
+
+.habit-name {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.habit-time {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.habit-streak {
+  font-size: 0.7rem;
+  color: var(--warn);
+  margin-top: 4px;
+}
+
+.habit-delete {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+}
+
+/* Modal styles */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.overlay.on {
+  display: flex;
+}
+
+.modal {
+  background: var(--card2);
+  border-radius: 32px 32px 24px 24px;
+  width: 100%;
+  max-width: 500px;
+  padding: 24px 20px 32px;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.handle {
+  width: 40px;
+  height: 4px;
+  background: var(--muted);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+
+.modal-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.field {
+  margin-bottom: 16px;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.fi, .field input, .field select {
+  width: 100%;
+  padding: 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.sub-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  width: 100%;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: all 0.2s;
+}
+
+.sub-btn:active {
+  transform: scale(0.98);
+}
+
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+}
+
+.ei {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+/* Bottom Navigation */
+#nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card);
+  backdrop-filter: blur(20px);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 16px 20px;
+  border-top: 1px solid var(--border);
+  z-index: 100;
+}
+
+.nb {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 8px 12px;
+  border-radius: 24px;
+}
+
+.nb .ni {
+  font-size: 1.5rem;
+}
+
+.nb.active {
+  color: var(--accent);
+  background: rgba(124, 111, 255, 0.1);
+}
+
+/* Quick actions */
+.quick-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.action-btn {
+  flex: 1;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn:active {
+  transform: scale(0.97);
+  background: var(--accent);
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--card2);
+  color: var(--text);
+  padding: 12px 24px;
+  border-radius: 40px;
+  font-size: 0.85rem;
+  z-index: 200;
+  animation: slideUp 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  border: 1px solid var(--accent);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--card);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 4px;
+}
+</style>
 </head>
 <body>
 <div id="app">
-
-  <!-- Top Header -->
-  <header class="top-header">
-    <div>
-      <h1>📖 مذاكرتي</h1>
-      <div class="subtitle" id="header-date"></div>
+  <!-- Home Panel -->
+  <div id="p-home" class="panel">
+    <div class="topbar">
+      <h1>✨ مرحباً بك</h1>
     </div>
-    <div class="header-actions">
-      <button class="header-btn" onclick="exportICS()">📅 تصدير ICS</button>
-    </div>
-  </header>
-
-  <!-- Pages -->
-  <!-- HOME -->
-  <section class="page active" id="page-home">
-    <div class="home-hero">
-      <h2 id="home-greeting">مرحباً! 👋</h2>
-      <p id="home-subtext">جاهز للمذاكرة اليوم؟</p>
-    </div>
+    
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-num" id="stat-subjects">0</div><div class="stat-label">📚 مادة</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-reminders">0</div><div class="stat-label">🔔 تذكير</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-habits">0</div><div class="stat-label">🦷 عادة</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-chapters">0</div><div class="stat-label">📑 فصل</div></div>
-    </div>
-    <div class="section-title"><span>⏰</span> القادم قريباً</div>
-    <div class="upcoming-list" id="upcoming-list">
-      <div class="empty-state"><div class="es-icon">🎉</div><p>لا يوجد تذكيرات قريبة</p></div>
-    </div>
-    <div class="divider"></div>
-    <div class="section-title"><span>🦷</span> عاداتك اليوم</div>
-    <div id="home-habits-preview"></div>
-  </section>
-
-  <!-- SUBJECTS -->
-  <section class="page" id="page-subjects">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <div class="section-title" style="margin-bottom:0"><span>📚</span> موادي</div>
-      <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-subject')">+ مادة جديدة</button>
-    </div>
-    <div class="subjects-grid" id="subjects-list"></div>
-  </section>
-
-  <!-- REMINDERS -->
-  <section class="page" id="page-reminders">
-    <div id="notif-banner" style="display:none;">
-      <div class="nb-icon">🔔</div>
-      <div class="nb-text"><strong>فعّل الإشعارات</strong> لتلقي تذكيرات العادات والدراسة</div>
-      <button class="btn btn-warning btn-sm" onclick="requestNotifPermission()">تفعيل</button>
-    </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <div class="section-title" style="margin-bottom:0"><span>🔔</span> التذكيرات</div>
-      <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-reminder')">+ تذكير جديد</button>
-    </div>
-    <div class="reminders-list" id="reminders-list"></div>
-  </section>
-
-  <!-- HABITS -->
-  <section class="page" id="page-habits">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <div class="section-title" style="margin-bottom:0"><span>🦷</span> عادات يومية</div>
-      <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-habit')">+ عادة جديدة</button>
-    </div>
-    <div class="habits-today-banner">
-      <div class="htb-left">
-        <h3>تقدمك اليوم</h3>
-        <p id="habit-today-progress-text">جاري الحساب...</p>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-subjects">0</div>
+        <div class="stat-label">مواد</div>
       </div>
-      <div class="htb-right">
-        <div class="htb-count" id="habit-today-count">0/0</div>
-        <div class="htb-label">تم/الكل</div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-reminders">0</div>
+        <div class="stat-label">تذكيرات</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-habits">0</div>
+        <div class="stat-label">عادات</div>
       </div>
     </div>
-    <div class="habits-list" id="habits-list"></div>
-  </section>
 
-  <!-- Bottom Navbar -->
-  <nav class="bottom-nav">
-    <div class="nav-item active" data-page="home" onclick="switchPage('home',this)">
-      <div class="nav-icon">🏠</div>
-      <span>الرئيسية</span>
+    <div class="quick-actions">
+      <div class="action-btn" onclick="goTo('subjects')">📚 مواد جديدة</div>
+      <div class="action-btn" onclick="goTo('reminders')">⏰ تذكير جديد</div>
+      <div class="action-btn" onclick="goTo('habits')">🦷 إضافة عادة</div>
     </div>
-    <div class="nav-item" data-page="subjects" onclick="switchPage('subjects',this)">
-      <div class="nav-icon">📚</div>
-      <span>المواد</span>
-    </div>
-    <div class="nav-item" data-page="reminders" onclick="switchPage('reminders',this)">
-      <div class="nav-icon">🔔</div>
-      <span>التذكيرات</span>
-    </div>
-    <div class="nav-item" data-page="habits" onclick="switchPage('habits',this)">
-      <div class="nav-icon">🦷</div>
-      <span>عادات يومية</span>
-    </div>
-  </nav>
-</div>
 
-<!-- Toast Container -->
-<div id="toast-container"></div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📖 إنجاز اليوم</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="today-progress" style="width: 0%"></div>
+      </div>
+      <div style="font-size: 0.85rem; color: var(--text-dim); text-align: center;" id="progress-text">
+        أكمل عاداتك اليومية
+      </div>
+    </div>
 
-<!-- ========================================
-     MODALS
-     ======================================== -->
+    <div id="today-habits-preview"></div>
+  </div>
 
-<!-- Add Subject Modal -->
-<div class="modal-overlay" id="modal-add-subject">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">➕ إضافة مادة</div>
-      <button class="modal-close" onclick="closeModal('modal-add-subject')">✕</button>
+  <!-- Subjects Panel -->
+  <div id="p-subjects" class="panel">
+    <div class="topbar">
+      <h1>📚 المواد</h1>
+      <button class="add-btn" onclick="openSubjectModal()">+</button>
     </div>
-    <div class="form-group">
-      <label class="form-label">اسم المادة *</label>
-      <input type="text" class="form-input" id="new-subject-name" placeholder="مثال: رياضيات، فيزياء..." />
+    <div id="subjects-list"></div>
+  </div>
+
+  <!-- Reminders Panel -->
+  <div id="p-reminders" class="panel">
+    <div class="topbar">
+      <h1>🔔 التذكيرات</h1>
+      <button class="add-btn" onclick="openReminderModal()">+</button>
     </div>
-    <div class="form-group">
-      <label class="form-label">اختر اللون</label>
-      <div class="color-picker" id="subject-color-picker"></div>
+    <div id="reminders-list"></div>
+  </div>
+
+  <!-- Habits Panel -->
+  <div id="p-habits" class="panel">
+    <div class="topbar">
+      <h1>🦷 عادات يومية</h1>
+      <button class="add-btn" onclick="openHabitModal()">+</button>
     </div>
-    <div class="form-group">
-      <label class="form-label">ملاحظات (اختياري)</label>
-      <textarea class="form-textarea" id="new-subject-notes" placeholder="أي ملاحظات عن المادة..." style="min-height:60px;"></textarea>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-primary" style="flex:1" onclick="addSubject()">حفظ</button>
-      <button class="btn btn-secondary" onclick="closeModal('modal-add-subject')">إلغاء</button>
-    </div>
+    <div id="habits-list"></div>
+    <button onclick="exportAllICS()" class="sub-btn" style="margin-top: 20px;">📅 تصدير التقويم (ICS)</button>
   </div>
 </div>
 
-<!-- Add Chapter Modal -->
-<div class="modal-overlay" id="modal-add-chapter">
+<!-- Bottom Navigation -->
+<div id="nav">
+  <button class="nb" onclick="goTo('home')"><span class="ni">🏠</span>الرئيسية</button>
+  <button class="nb" onclick="goTo('subjects')"><span class="ni">📖</span>المواد</button>
+  <button class="nb" onclick="goTo('reminders')"><span class="ni">🔔</span>التذكيرات</button>
+  <button class="nb" onclick="goTo('habits')"><span class="ni">🦷</span>العادات</button>
+</div>
+
+<!-- Modals -->
+<div class="overlay" id="ov-subject" onclick="if(event.target.id==='ov-subject')closeOv('ov-subject')">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">📑 إضافة فصل</div>
-      <button class="modal-close" onclick="closeModal('modal-add-chapter')">✕</button>
-    </div>
-    <div class="form-group">
-      <label class="form-label">اسم الفصل / الوحدة *</label>
-      <input type="text" class="form-input" id="new-chapter-name" placeholder="مثال: الفصل الأول - المتجهات" />
-    </div>
-    <button class="btn btn-primary btn-full" onclick="addChapter()">إضافة</button>
+    <div class="handle"></div>
+    <div class="modal-title">📖 إضافة مادة</div>
+    <div class="field"><label>اسم المادة</label><input class="fi" id="subj-name" placeholder="مثال: رياضيات"></div>
+    <div class="field"><label>📅 عدد أيام المذاكرة</label><input class="fi" type="number" id="subj-days" placeholder="30" value="30"></div>
+    <button class="sub-btn" onclick="saveSubject()">💾 حفظ</button>
   </div>
 </div>
 
-<!-- Add Reminder Modal -->
-<div class="modal-overlay" id="modal-add-reminder">
+<div class="overlay" id="ov-reminder" onclick="if(event.target.id==='ov-reminder')closeOv('ov-reminder')">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">🔔 تذكير جديد</div>
-      <button class="modal-close" onclick="closeModal('modal-add-reminder')">✕</button>
-    </div>
-    <div class="form-group">
-      <label class="form-label">اسم التذكير *</label>
-      <input type="text" class="form-input" id="new-reminder-name" placeholder="مثال: امتحان الفيزياء، كويز الرياضيات..." />
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">النوع *</label>
-        <select class="form-select" id="new-reminder-type" onchange="updateReminderStages()">
-          <option value="exam">📝 امتحان</option>
-          <option value="quiz">✏️ كويز</option>
-          <option value="assignment">📋 واجب</option>
-          <option value="other">📌 أخرى</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">المادة</label>
-        <select class="form-select" id="new-reminder-subject"></select>
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">التاريخ والوقت *</label>
-      <input type="datetime-local" class="form-input" id="new-reminder-date" />
-    </div>
-    <div class="form-group" id="reminder-stages-container">
-      <label class="form-label">مراحل التذكير التلقائية</label>
-      <div id="reminder-stages-preview" style="font-size:0.78rem;color:var(--text2);padding:8px;background:var(--bg3);border-radius:var(--radius-sm);"></div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-primary" style="flex:1" onclick="addReminder()">حفظ</button>
-      <button class="btn btn-secondary" onclick="closeModal('modal-add-reminder')">إلغاء</button>
-    </div>
+    <div class="handle"></div>
+    <div class="modal-title">🔔 إضافة تذكير</div>
+    <div class="field"><label>العنوان</label><input class="fi" id="rem-title" placeholder="مثال: اختبار رياضيات"></div>
+    <div class="field"><label>التاريخ</label><input class="fi" type="date" id="rem-date"></div>
+    <div class="field"><label>الوقت</label><input class="fi" type="time" id="rem-time" value="09:00"></div>
+    <button class="sub-btn" onclick="saveReminder()">💾 حفظ</button>
   </div>
 </div>
 
-<!-- Add Habit Modal -->
-<div class="modal-overlay" id="modal-add-habit">
+<div class="overlay" id="ov-habit" onclick="if(event.target.id==='ov-habit')closeOv('ov-habit')">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">🦷 عادة جديدة</div>
-      <button class="modal-close" onclick="closeModal('modal-add-habit')">✕</button>
-    </div>
-    <div class="form-group">
-      <label class="form-label">اسم العادة *</label>
-      <input type="text" class="form-input" id="new-habit-name" placeholder="مثال: شرب الماء، تمارين، قراءة..." />
-    </div>
-    <div class="form-group">
-      <label class="form-label">الأوقات اليومية</label>
-      <div id="habit-times-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;"></div>
-      <div style="display:flex;gap:8px;">
-        <input type="time" class="form-input" id="new-habit-time-input" style="flex:1;" />
-        <button class="btn btn-secondary btn-sm" onclick="addHabitTimeInput()">+ إضافة</button>
-      </div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-primary" style="flex:1" onclick="saveNewHabit()">حفظ</button>
-      <button class="btn btn-secondary" onclick="closeModal('modal-add-habit')">إلغاء</button>
-    </div>
+    <div class="handle"></div>
+    <div class="modal-title">🦷 إضافة عادة</div>
+    <div class="field"><label>اسم العادة</label><input class="fi" id="habit-name" placeholder="مثال: تفريش الأسنان"></div>
+    <div class="field"><label>⏰ الوقت (اختياري)</label><input class="fi" type="time" id="habit-time"></div>
+    <div class="field"><label>🏷️ رمز تعبيري</label><input class="fi" id="habit-emoji" placeholder="🦷" value="✅" maxlength="2"></div>
+    <button class="sub-btn" onclick="saveHabit()">💾 حفظ العادة</button>
   </div>
 </div>
 
 <script>
-// =====================================================
-// DATA LAYER - localStorage
-// =====================================================
-const DB = {
-  get(key, def=[]) {
-    try { return JSON.parse(localStorage.getItem('mthakrti_' + key)) ?? def; }
-    catch { return def; }
-  },
-  set(key, val) { localStorage.setItem('mthakrti_' + key, JSON.stringify(val)); },
-};
+// ========== DATA STORES ==========
+let subjects = JSON.parse(localStorage.getItem('mz-subjects') || '[]');
+let reminders = JSON.parse(localStorage.getItem('mz-reminders') || '[]');
+let habits = JSON.parse(localStorage.getItem('mz-habits') || '[]');
+let habitLogs = JSON.parse(localStorage.getItem('mz-habit-logs') || '{}');
 
-// App State
-let subjects   = DB.get('subjects', []);
-let reminders  = DB.get('reminders', []);
-let habits     = DB.get('habits', []);
-let habitLogs  = DB.get('habitLogs', {}); // { "YYYY-MM-DD": { habitId: [timeIndex, ...] } }
-
-// Subject colors palette
-const COLORS = ['#ef4444','#f97316','#f59e0b','#10b981','#06b6d4','#3b82f6','#6366f1','#8b5cf6','#ec4899','#14b8a6'];
-let selectedSubjectColor = COLORS[5];
-let currentChapterSubjectId = null;
-
-// =====================================================
-// INIT
-// =====================================================
-function init() {
-  seedDefaultHabits();
-  updateHeaderDate();
-  updateReminderStagesPreview();
-  renderAll();
-  checkNotificationPermission();
-  scheduleHabitNotifications();
-  resetHabitLogsIfNewDay();
+// Default habits
+if (habits.length === 0) {
+  habits = [
+    { id: Date.now(), name: "🦷 تفريش الأسنان", time: "07:30", emoji: "🦷", streak: 0 },
+    { id: Date.now() + 1, name: "📖 قراءة 10 دقائق", time: "20:00", emoji: "📖", streak: 0 }
+  ];
+  saveHabits();
 }
 
-function seedDefaultHabits() {
-  // Add default toothbrushing habit if no habits exist
-  if (habits.length === 0) {
-    habits.push({
-      id: 'habit_' + Date.now(),
-      name: '🦷 تفريش الأسنان',
-      times: ['07:30', '22:00'],
-      createdAt: new Date().toISOString(),
-      streak: 0,
-    });
-    DB.set('habits', habits);
-  }
+let currentTab = 'home';
+
+// ========== HELPERS ==========
+function showToast(msg) {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerText = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2000);
 }
 
-function resetHabitLogsIfNewDay() {
-  const today = todayStr();
-  const lastDay = DB.get('lastActiveDay', '');
-  if (lastDay !== today) {
-    DB.set('lastActiveDay', today);
-    // Logs persist per day by key, nothing to reset
-  }
+function saveSubjects() { localStorage.setItem('mz-subjects', JSON.stringify(subjects)); }
+function saveReminders() { localStorage.setItem('mz-reminders', JSON.stringify(reminders)); }
+function saveHabits() { localStorage.setItem('mz-habits', JSON.stringify(habits)); }
+function saveHabitLogs() { localStorage.setItem('mz-habit-logs', JSON.stringify(habitLogs)); }
+
+function closeOv(id) {
+  document.getElementById(id).classList.remove('on');
 }
 
-function todayStr() {
-  return new Date().toISOString().slice(0,10);
+function goTo(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`p-${tab}`).classList.add('active');
+  document.querySelectorAll('.nb').forEach(btn => btn.classList.remove('active'));
+  event?.target?.closest('.nb')?.classList.add('active');
+  
+  if (tab === 'home') renderHome();
+  if (tab === 'subjects') renderSubjects();
+  if (tab === 'reminders') renderReminders();
+  if (tab === 'habits') renderHabits();
 }
 
-// =====================================================
-// NAVIGATION
-// =====================================================
-function switchPage(name, el) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  el.classList.add('active');
-  if (name === 'home') renderHome();
-  if (name === 'subjects') renderSubjects();
-  if (name === 'reminders') renderReminders();
-  if (name === 'habits') renderHabits();
-}
-
-// =====================================================
-// MODALS
-// =====================================================
-function openModal(id) {
-  document.getElementById(id).classList.add('open');
-  if (id === 'modal-add-subject') buildColorPicker();
-  if (id === 'modal-add-reminder') populateReminderSubjectSelect();
-  if (id === 'modal-add-habit') resetHabitForm();
-}
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-}
-// Close on overlay click
-document.querySelectorAll('.modal-overlay').forEach(o => {
-  o.addEventListener('click', e => { if(e.target === o) o.classList.remove('open'); });
-});
-
-// =====================================================
-// TOAST
-// =====================================================
-function toast(msg, type='info', dur=2800) {
-  const t = document.createElement('div');
-  t.className = 'toast ' + type;
-  const icons = { success:'✅', error:'❌', info:'ℹ️' };
-  t.innerHTML = `<span>${icons[type]||'ℹ️'}</span> ${msg}`;
-  document.getElementById('toast-container').appendChild(t);
-  setTimeout(() => t.remove(), dur);
-}
-
-// =====================================================
-// NOTIFICATIONS
-// =====================================================
-function checkNotificationPermission() {
-  if (!('Notification' in window)) return;
-  if (Notification.permission === 'default') {
-    document.getElementById('notif-banner').style.display = 'flex';
-  }
-}
-
-async function requestNotifPermission() {
-  if (!('Notification' in window)) { toast('المتصفح لا يدعم الإشعارات', 'error'); return; }
-  const perm = await Notification.requestPermission();
-  if (perm === 'granted') {
-    toast('تم تفعيل الإشعارات ✅', 'success');
-    document.getElementById('notif-banner').style.display = 'none';
-    scheduleHabitNotifications();
-  } else {
-    toast('لم يتم تفعيل الإشعارات', 'error');
-  }
-}
-
-function scheduleHabitNotifications() {
-  // Simple: check every minute if it's time for a habit
-  setInterval(() => {
-    if (Notification.permission !== 'granted') return;
-    const now = new Date();
-    const hm = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-    const today = todayStr();
-    habits.forEach(h => {
-      h.times.forEach((t, idx) => {
-        if (t === hm) {
-          const log = (habitLogs[today]?.[h.id] || []);
-          if (!log.includes(idx)) {
-            new Notification('مذاكرتي - عادة يومية', {
-              body: `حان وقت: ${h.name} 🕐 ${t}`,
-              icon: '📖'
-            });
-          }
-        }
-      });
-    });
-  }, 60000);
-}
-
-// =====================================================
-// HEADER DATE
-// =====================================================
-function updateHeaderDate() {
-  const d = new Date();
-  const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
-  document.getElementById('header-date').textContent = d.toLocaleDateString('ar-JO', opts);
-}
-
-// =====================================================
-// RENDER ALL
-// =====================================================
-function renderAll() {
-  renderHome();
+// ========== SUBJECTS ==========
+function openSubjectModal() { document.getElementById('ov-subject').classList.add('on'); }
+function saveSubject() {
+  const name = document.getElementById('subj-name').value.trim();
+  const days = parseInt(document.getElementById('subj-days').value);
+  if (!name) return showToast('الرجاء إدخال اسم المادة');
+  
+  subjects.push({ id: Date.now(), name, days: days || 30, createdAt: new Date().toISOString() });
+  saveSubjects();
+  closeOv('ov-subject');
+  document.getElementById('subj-name').value = '';
   renderSubjects();
-  renderReminders();
-  renderHabits();
-}
-
-// =====================================================
-// HOME PAGE
-// =====================================================
-function renderHome() {
-  // Stats
-  document.getElementById('stat-subjects').textContent = subjects.length;
-  document.getElementById('stat-reminders').textContent = reminders.length;
-  document.getElementById('stat-habits').textContent = habits.length;
-  const totalChapters = subjects.reduce((a,s)=>a+(s.chapters||[]).length,0);
-  document.getElementById('stat-chapters').textContent = totalChapters;
-
-  // Greeting
-  const h = new Date().getHours();
-  const greet = h < 12 ? 'صباح الخير ☀️' : h < 17 ? 'مساء الخير 🌤️' : 'مساء النور 🌙';
-  document.getElementById('home-greeting').textContent = greet;
-
-  // Upcoming
-  const ul = document.getElementById('upcoming-list');
-  const now = Date.now();
-  const upcoming = reminders
-    .map(r => ({ ...r, ms: new Date(r.date).getTime() - now }))
-    .filter(r => r.ms > 0)
-    .sort((a,b) => a.ms - b.ms)
-    .slice(0,5);
-
-  if (!upcoming.length) {
-    ul.innerHTML = '<div class="empty-state"><div class="es-icon">🎉</div><p>لا يوجد تذكيرات قريبة</p></div>';
-  } else {
-    ul.innerHTML = upcoming.map(r => {
-      const days = Math.ceil(r.ms / 86400000);
-      const cls = days <= 1 ? 'days-urgent' : days <= 3 ? 'days-soon' : 'days-ok';
-      const typeIcons = { exam:'📝', quiz:'✏️', assignment:'📋', other:'📌' };
-      const sub = subjects.find(s=>s.id===r.subjectId);
-      return `<div class="upcoming-item">
-        <div class="ui-icon">${typeIcons[r.type]||'📌'}</div>
-        <div class="ui-info">
-          <div class="ui-name">${r.name}</div>
-          <div class="ui-date">${sub?sub.name+' · ':''} ${fmtDate(r.date)}</div>
-        </div>
-        <div class="ui-days ${cls}">${days===0?'اليوم':days+'يوم'}</div>
-      </div>`;
-    }).join('');
-  }
-
-  // Habits today preview
-  const habitsPreview = document.getElementById('home-habits-preview');
-  if (!habits.length) {
-    habitsPreview.innerHTML = '<div class="empty-state" style="padding:16px"><p>لا توجد عادات بعد</p></div>';
-    return;
-  }
-  const today = todayStr();
-  const totalChecks = habits.reduce((a,h)=>a+h.times.length,0);
-  const doneChecks = habits.reduce((a,h)=>{
-    const log = habitLogs[today]?.[h.id]||[];
-    return a + log.length;
-  },0);
-  habitsPreview.innerHTML = `
-    <div style="background:var(--card);border-radius:var(--radius);padding:14px;border:1px solid var(--border);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <span style="font-size:0.85rem;font-weight:700;">تذكيرات العادات</span>
-        <span class="badge badge-${doneChecks===totalChecks?'success':'primary'}">${doneChecks}/${totalChecks} مكتمل</span>
-      </div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${totalChecks?Math.round(doneChecks/totalChecks*100):0}%;background:var(--success);"></div></div>
-      <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;">
-        ${habits.map(h=>{
-          const log = habitLogs[today]?.[h.id]||[];
-          const allDone = log.length >= h.times.length;
-          return `<div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;">
-            <span style="color:${allDone?'var(--success)':'var(--text3)'};">${allDone?'✅':'⬜'}</span>
-            <span style="flex:1;">${h.name}</span>
-            <span style="color:var(--text2);font-size:0.72rem;">${h.times.join(' · ')}</span>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`;
-}
-
-// =====================================================
-// SUBJECTS PAGE
-// =====================================================
-function buildColorPicker() {
-  const cp = document.getElementById('subject-color-picker');
-  cp.innerHTML = COLORS.map(c=>`
-    <div class="color-dot ${c===selectedSubjectColor?'selected':''}" 
-         style="background:${c}" onclick="selectColor('${c}')"></div>`).join('');
-}
-
-function selectColor(c) {
-  selectedSubjectColor = c;
-  buildColorPicker();
-}
-
-function addSubject() {
-  const name = document.getElementById('new-subject-name').value.trim();
-  if (!name) { toast('أدخل اسم المادة', 'error'); return; }
-  subjects.push({
-    id: 'sub_' + Date.now(),
-    name,
-    color: selectedSubjectColor,
-    notes: document.getElementById('new-subject-notes').value.trim(),
-    chapters: [],
-    createdAt: new Date().toISOString()
-  });
-  DB.set('subjects', subjects);
-  document.getElementById('new-subject-name').value = '';
-  document.getElementById('new-subject-notes').value = '';
-  closeModal('modal-add-subject');
-  toast('تمت إضافة المادة ✅', 'success');
-  renderAll();
+  if (currentTab === 'home') renderHome();
+  showToast('✅ تم إضافة المادة');
 }
 
 function deleteSubject(id) {
-  if (!confirm('هل تريد حذف هذه المادة وكل فصولها؟')) return;
-  subjects = subjects.filter(s=>s.id!==id);
-  DB.set('subjects', subjects);
-  renderAll();
-  toast('تم حذف المادة', 'info');
-}
-
-function openAddChapterModal(subjectId) {
-  currentChapterSubjectId = subjectId;
-  document.getElementById('new-chapter-name').value = '';
-  openModal('modal-add-chapter');
-}
-
-function addChapter() {
-  const name = document.getElementById('new-chapter-name').value.trim();
-  if (!name) { toast('أدخل اسم الفصل', 'error'); return; }
-  const sub = subjects.find(s=>s.id===currentChapterSubjectId);
-  if (!sub) return;
-  sub.chapters.push({ id: 'ch_' + Date.now(), name, done: false });
-  DB.set('subjects', subjects);
-  closeModal('modal-add-chapter');
-  toast('تمت إضافة الفصل', 'success');
+  subjects = subjects.filter(s => s.id !== id);
+  saveSubjects();
   renderSubjects();
-  renderHome();
-}
-
-function toggleChapter(subId, chId) {
-  const sub = subjects.find(s=>s.id===subId);
-  if (!sub) return;
-  const ch = sub.chapters.find(c=>c.id===chId);
-  if (ch) { ch.done = !ch.done; DB.set('subjects', subjects); renderSubjects(); renderHome(); }
-}
-
-function deleteChapter(subId, chId) {
-  const sub = subjects.find(s=>s.id===subId);
-  if (!sub) return;
-  sub.chapters = sub.chapters.filter(c=>c.id!==chId);
-  DB.set('subjects', subjects);
-  renderSubjects(); renderHome();
+  if (currentTab === 'home') renderHome();
+  showToast('🗑️ تم حذف المادة');
 }
 
 function renderSubjects() {
   const container = document.getElementById('subjects-list');
   if (!subjects.length) {
-    container.innerHTML = '<div class="empty-state"><div class="es-icon">📚</div><p>لا توجد مواد بعد. أضف مادة جديدة!</p></div>';
+    container.innerHTML = `<div class="empty"><div class="ei">📚</div><p>لا توجد مواد بعد</p><p style="font-size:0.8rem">أضف مادة جديدة للمذاكرة</p></div>`;
     return;
   }
-  container.innerHTML = subjects.map(s => {
-    const doneCh = (s.chapters||[]).filter(c=>c.done).length;
-    const totalCh = (s.chapters||[]).length;
-    const pct = totalCh ? Math.round(doneCh/totalCh*100) : 0;
-    return `<div class="subject-card">
-      <div class="subject-header">
-        <div class="subject-color-bar" style="background:${s.color}"></div>
-        <div class="subject-info">
-          <div class="subject-name">${s.name}</div>
-          <div class="subject-meta">${totalCh} فصل · ${pct}% مكتمل</div>
-        </div>
-        <div class="subject-actions">
-          <button class="btn btn-secondary btn-icon btn-sm" onclick="openAddChapterModal('${s.id}')">📑</button>
-          <button class="btn btn-danger btn-icon btn-sm" onclick="deleteSubject('${s.id}')">🗑️</button>
-        </div>
+  container.innerHTML = subjects.map(s => `
+    <div class="subject-item">
+      <div class="subject-name">
+        <span class="subject-emoji">📘</span>
+        ${escapeHtml(s.name)}
       </div>
-      <div class="subject-body">
-        <div class="progress-bar" style="margin-bottom:10px;">
-          <div class="progress-fill" style="width:${pct}%;background:${s.color};"></div>
-        </div>
-        ${s.notes ? `<div style="font-size:0.78rem;color:var(--text2);margin-bottom:8px;">${s.notes}</div>` : ''}
-        ${totalCh ? `<div class="chapters-list">
-          ${(s.chapters||[]).map(ch=>`
-            <div class="chapter-item ${ch.done?'done':''}">
-              <div class="ch-check" onclick="toggleChapter('${s.id}','${ch.id}')">${ch.done?'✓':''}</div>
-              <div class="ch-name">${ch.name}</div>
-              <button class="ch-del" onclick="deleteChapter('${s.id}','${ch.id}')">✕</button>
-            </div>`).join('')}
-        </div>` : `<div style="font-size:0.78rem;color:var(--text3);text-align:center;padding:8px;">لا توجد فصول. اضغط 📑 لإضافة فصل.</div>`}
-      </div>
-    </div>`;
-  }).join('');
+      <div class="subject-days">⏱️ مدة المذاكرة: ${s.days} يوم</div>
+      <button onclick="deleteSubject(${s.id})" style="background:none;border:none;color:var(--danger);margin-top:8px;font-size:0.75rem">🗑️ حذف</button>
+    </div>
+  `).join('');
 }
 
-// =====================================================
-// REMINDERS PAGE
-// =====================================================
-// Stages config per type
-const STAGES_CONFIG = {
-  exam: [
-    { label: 'بدأت المذاكرة', daysBefore: 14, color: '#8b5cf6' },
-    { label: 'مراجعة أولى', daysBefore: 7,  color: '#3b82f6' },
-    { label: 'مراجعة ثانية', daysBefore: 3,  color: '#f59e0b' },
-    { label: 'قبل يوم واحد', daysBefore: 1,  color: '#ef4444' },
-  ],
-  quiz: [
-    { label: 'بدأت المذاكرة', daysBefore: 3, color: '#8b5cf6' },
-    { label: 'مراجعة سريعة', daysBefore: 1, color: '#ef4444' },
-  ],
-  assignment: [
-    { label: 'بدأت العمل',    daysBefore: 7, color: '#3b82f6' },
-    { label: 'نصف الوقت',    daysBefore: 3, color: '#f59e0b' },
-    { label: 'آخر يوم',      daysBefore: 1, color: '#ef4444' },
-  ],
-  other: [
-    { label: 'تذكير مبكر',   daysBefore: 2, color: '#06b6d4' },
-  ],
-};
-
-function populateReminderSubjectSelect() {
-  const sel = document.getElementById('new-reminder-subject');
-  sel.innerHTML = '<option value="">— بدون مادة —</option>' +
-    subjects.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
-  // Set default datetime
-  const now = new Date();
-  now.setDate(now.getDate()+7);
-  now.setHours(9,0,0,0);
-  document.getElementById('new-reminder-date').value = now.toISOString().slice(0,16);
-  updateReminderStages();
+// ========== REMINDERS ==========
+function openReminderModal() { 
+  document.getElementById('rem-date').valueAsDate = new Date();
+  document.getElementById('ov-reminder').classList.add('on'); 
 }
 
-function updateReminderStages() {
-  const type = document.getElementById('new-reminder-type')?.value || 'exam';
-  const dateVal = document.getElementById('new-reminder-date')?.value;
-  if (!dateVal) return;
-  updateReminderStagesPreview(type, dateVal);
-}
-
-function updateReminderStagesPreview(type, dateVal) {
-  const container = document.getElementById('reminder-stages-preview');
-  if (!container) return;
-  if (!type || !dateVal) { container.textContent = 'اختر النوع والتاريخ أولاً'; return; }
-  const stages = STAGES_CONFIG[type] || [];
-  const mainDate = new Date(dateVal);
-  container.innerHTML = stages.map(st => {
-    const d = new Date(mainDate);
-    d.setDate(d.getDate() - st.daysBefore);
-    return `<div style="display:flex;align-items:center;gap:6px;margin:3px 0;">
-      <div style="width:8px;height:8px;border-radius:50%;background:${st.color};flex-shrink:0;"></div>
-      <span>${st.label}</span>
-      <span style="color:var(--text3);">— ${fmtDate(d.toISOString())}</span>
-    </div>`;
-  }).join('') || '<span>لا توجد مراحل تلقائية</span>';
-}
-
-function addReminder() {
-  const name = document.getElementById('new-reminder-name').value.trim();
-  const type = document.getElementById('new-reminder-type').value;
-  const date = document.getElementById('new-reminder-date').value;
-  const subjectId = document.getElementById('new-reminder-subject').value;
-  if (!name || !date) { toast('أدخل الاسم والتاريخ', 'error'); return; }
-
-  const stages = (STAGES_CONFIG[type]||[]).map(st => {
-    const d = new Date(date);
-    d.setDate(d.getDate() - st.daysBefore);
-    return { ...st, date: d.toISOString(), done: false };
-  });
-
-  reminders.push({ id: 'rem_'+Date.now(), name, type, date, subjectId, stages, createdAt: new Date().toISOString() });
-  DB.set('reminders', reminders);
-  document.getElementById('new-reminder-name').value = '';
-  closeModal('modal-add-reminder');
-  toast('تمت إضافة التذكير ✅', 'success');
-  renderAll();
+function saveReminder() {
+  const title = document.getElementById('rem-title').value.trim();
+  const date = document.getElementById('rem-date').value;
+  const time = document.getElementById('rem-time').value;
+  if (!title) return showToast('الرجاء إدخال عنوان التذكير');
+  
+  reminders.push({ id: Date.now(), title, date, time, createdAt: new Date().toISOString() });
+  saveReminders();
+  closeOv('ov-reminder');
+  document.getElementById('rem-title').value = '';
+  renderReminders();
+  if (currentTab === 'home') renderHome();
+  showToast('✅ تم إضافة التذكير');
+  scheduleNotification({ title, date, time });
 }
 
 function deleteReminder(id) {
-  if (!confirm('هل تريد حذف هذا التذكير؟')) return;
-  reminders = reminders.filter(r=>r.id!==id);
-  DB.set('reminders', reminders);
-  renderAll();
-  toast('تم حذف التذكير', 'info');
-}
-
-function toggleStage(remId, stageIdx) {
-  const rem = reminders.find(r=>r.id===remId);
-  if (!rem || !rem.stages[stageIdx]) return;
-  rem.stages[stageIdx].done = !rem.stages[stageIdx].done;
-  DB.set('reminders', reminders);
+  reminders = reminders.filter(r => r.id !== id);
+  saveReminders();
   renderReminders();
+  if (currentTab === 'home') renderHome();
+  showToast('🗑️ تم حذف التذكير');
 }
 
 function renderReminders() {
   const container = document.getElementById('reminders-list');
-  const typeIcons = { exam:'📝', quiz:'✏️', assignment:'📋', other:'📌' };
-  const typeLabels = { exam:'امتحان', quiz:'كويز', assignment:'واجب', other:'أخرى' };
-  const typeBadges = { exam:'badge-danger', quiz:'badge-warning', assignment:'badge-primary', other:'badge-secondary' };
-
   if (!reminders.length) {
-    container.innerHTML = '<div class="empty-state"><div class="es-icon">🔔</div><p>لا توجد تذكيرات بعد. أضف تذكيراً جديداً!</p></div>';
+    container.innerHTML = `<div class="empty"><div class="ei">🔔</div><p>لا توجد تذكيرات</p></div>`;
     return;
   }
-
-  const sorted = [...reminders].sort((a,b)=>new Date(a.date)-new Date(b.date));
-  container.innerHTML = sorted.map(r => {
-    const sub = subjects.find(s=>s.id===r.subjectId);
-    const doneSt = (r.stages||[]).filter(s=>s.done).length;
-    return `<div class="reminder-card type-${r.type}">
-      <div class="reminder-header">
-        <div>
-          <div style="display:flex;align-items:center;gap:6px;">
-            <span>${typeIcons[r.type]||'📌'}</span>
-            <div class="reminder-name">${r.name}</div>
-          </div>
-          <div class="reminder-subject">${sub?sub.name:'—'}</div>
-          <div class="reminder-date">📅 ${fmtDate(r.date)}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-          <span class="badge ${typeBadges[r.type]||'badge-secondary'}">${typeLabels[r.type]}</span>
-          <button class="btn btn-danger btn-icon btn-sm" onclick="deleteReminder('${r.id}')">🗑️</button>
-        </div>
-      </div>
-      ${r.stages && r.stages.length ? `
-      <div class="reminder-stages">
-        <div style="font-size:0.75rem;color:var(--text2);margin-bottom:4px;">المراحل: ${doneSt}/${r.stages.length}</div>
-        <div class="stage-list">
-          ${r.stages.map((st,i)=>`
-            <div class="stage-item ${st.done?'si-done':''}" onclick="toggleStage('${r.id}',${i})" style="cursor:pointer;">
-              <div class="si-dot" style="background:${st.color}"></div>
-              <div class="si-label">${st.label}</div>
-              <div class="si-date">${fmtDate(st.date)}</div>
-              <span style="color:${st.done?'var(--success)':'var(--text3)'}">${st.done?'✅':'⬜'}</span>
-            </div>`).join('')}
-        </div>
-      </div>` : ''}
-    </div>`;
-  }).join('');
+  const sorted = [...reminders].sort((a,b) => new Date(a.date) - new Date(b.date));
+  container.innerHTML = sorted.map(r => `
+    <div class="reminder-card">
+      <div class="reminder-title">📌 ${escapeHtml(r.title)}</div>
+      <div class="reminder-date">📅 ${formatDate(r.date)} ${r.time ? '⏰ ' + r.time : ''}</div>
+      <button onclick="deleteReminder(${r.id})" style="background:none;border:none;color:var(--danger);margin-top:8px;font-size:0.7rem">🗑️ حذف</button>
+    </div>
+  `).join('');
 }
 
-// =====================================================
-// HABITS PAGE
-// =====================================================
-let newHabitTimes = [];
+// ========== HABITS ==========
+function openHabitModal() { document.getElementById('ov-habit').classList.add('on'); }
 
-function resetHabitForm() {
-  newHabitTimes = [];
-  document.getElementById('new-habit-name').value = '';
-  document.getElementById('new-habit-time-input').value = '';
-  renderHabitTimesInput();
-}
-
-function addHabitTimeInput() {
-  const val = document.getElementById('new-habit-time-input').value;
-  if (!val) { toast('اختر وقتاً', 'error'); return; }
-  if (newHabitTimes.includes(val)) { toast('هذا الوقت موجود مسبقاً', 'error'); return; }
-  newHabitTimes.push(val);
-  newHabitTimes.sort();
-  document.getElementById('new-habit-time-input').value = '';
-  renderHabitTimesInput();
-}
-
-function renderHabitTimesInput() {
-  const list = document.getElementById('habit-times-list');
-  if (!newHabitTimes.length) { list.innerHTML = '<div style="font-size:0.78rem;color:var(--text3);">لا توجد أوقات مضافة</div>'; return; }
-  list.innerHTML = newHabitTimes.map((t,i)=>`
-    <div style="display:flex;align-items:center;gap:8px;background:var(--bg3);border-radius:var(--radius-sm);padding:6px 10px;">
-      <span style="flex:1;font-size:0.85rem;font-weight:700;color:var(--primary-light);">🕐 ${t}</span>
-      <button class="btn btn-danger btn-icon btn-sm" onclick="removeHabitTimeInput(${i})">✕</button>
-    </div>`).join('');
-}
-
-function removeHabitTimeInput(i) {
-  newHabitTimes.splice(i,1);
-  renderHabitTimesInput();
-}
-
-function saveNewHabit() {
-  const name = document.getElementById('new-habit-name').value.trim();
-  if (!name) { toast('أدخل اسم العادة', 'error'); return; }
-  if (!newHabitTimes.length) { toast('أضف وقتاً واحداً على الأقل', 'error'); return; }
-  habits.push({ id:'habit_'+Date.now(), name, times:[...newHabitTimes], createdAt:new Date().toISOString(), streak:0 });
-  DB.set('habits', habits);
-  closeModal('modal-add-habit');
-  toast('تمت إضافة العادة ✅', 'success');
-  renderAll();
+function saveHabit() {
+  const name = document.getElementById('habit-name').value.trim();
+  const time = document.getElementById('habit-time').value;
+  const emoji = document.getElementById('habit-emoji').value || '✅';
+  if (!name) return showToast('الرجاء إدخال اسم العادة');
+  
+  habits.push({ id: Date.now(), name, time, emoji, streak: 0 });
+  saveHabits();
+  closeOv('ov-habit');
+  document.getElementById('habit-name').value = '';
+  document.getElementById('habit-time').value = '';
+  renderHabits();
+  if (currentTab === 'home') renderHome();
+  showToast('✅ تم إضافة العادة');
 }
 
 function deleteHabit(id) {
-  if (!confirm('هل تريد حذف هذه العادة؟')) return;
-  habits = habits.filter(h=>h.id!==id);
-  DB.set('habits', habits);
-  renderAll();
-  toast('تم حذف العادة', 'info');
+  habits = habits.filter(h => h.id !== id);
+  saveHabits();
+  renderHabits();
+  if (currentTab === 'home') renderHome();
+  showToast('🗑️ تم حذف العادة');
 }
 
-function toggleHabitCheck(habitId, timeIdx) {
-  const today = todayStr();
-  if (!habitLogs[today]) habitLogs[today] = {};
-  if (!habitLogs[today][habitId]) habitLogs[today][habitId] = [];
-  const log = habitLogs[today][habitId];
-  const pos = log.indexOf(timeIdx);
-  if (pos === -1) log.push(timeIdx);
-  else log.splice(pos,1);
-  DB.set('habitLogs', habitLogs);
+function toggleHabit(habitId, dateStr) {
+  if (!habitLogs[habitId]) habitLogs[habitId] = {};
+  habitLogs[habitId][dateStr] = !habitLogs[habitId][dateStr];
+  saveHabitLogs();
+  
+  // Update streak
+  const habit = habits.find(h => h.id === habitId);
+  if (habit) {
+    let streak = 0;
+    let currentDate = new Date();
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(currentDate);
+      d.setDate(currentDate.getDate() - i);
+      const dStr = d.toISOString().split('T')[0];
+      if (habitLogs[habitId]?.[dStr]) streak++;
+      else break;
+    }
+    habit.streak = streak;
+    saveHabits();
+  }
+  
   renderHabits();
-  renderHome();
+  if (currentTab === 'home') renderHome();
+}
+
+function isHabitCompleted(habitId, dateStr) {
+  return habitLogs[habitId]?.[dateStr] || false;
 }
 
 function renderHabits() {
   const container = document.getElementById('habits-list');
-  const today = todayStr();
-
-  // Update banner
-  let totalChecks=0, doneChecks=0;
-  habits.forEach(h=>{
-    totalChecks += h.times.length;
-    doneChecks += (habitLogs[today]?.[h.id]||[]).length;
-  });
-  document.getElementById('habit-today-count').textContent = `${doneChecks}/${totalChecks}`;
-  const pct = totalChecks ? Math.round(doneChecks/totalChecks*100) : 0;
-  document.getElementById('habit-today-progress-text').textContent =
-    pct === 100 ? '🎉 ممتاز! أكملت كل عاداتك اليوم!' :
-    pct >= 50  ? `أكملت ${pct}% من عاداتك، استمر!` :
-                 `باقي ${totalChecks-doneChecks} تذكير`;
-
   if (!habits.length) {
-    container.innerHTML = '<div class="empty-state"><div class="es-icon">🦷</div><p>لا توجد عادات بعد. أضف عادة جديدة!</p></div>';
+    container.innerHTML = `<div class="empty"><div class="ei">🦷</div><p>لا توجد عادات بعد</p><p style="font-size:0.8rem">أضف عادة يومية لتتبع تقدمك</p></div>`;
     return;
   }
-
+  
+  const today = new Date().toISOString().split('T')[0];
+  
   container.innerHTML = habits.map(h => {
-    const log = habitLogs[today]?.[h.id]||[];
-    const allDone = log.length >= h.times.length;
-    return `<div class="habit-card" style="${allDone?'border-color:rgba(16,185,129,0.3);':''}">
-      <div class="habit-header">
+    const completed = isHabitCompleted(h.id, today);
+    return `
+      <div class="habit-card ${completed ? 'completed' : ''}">
+        <div class="habit-check ${completed ? 'done' : ''}" onclick="toggleHabit(${h.id}, '${today}')"></div>
         <div class="habit-info">
-          <div class="habit-name">${h.name}</div>
-          <div class="habit-times">
-            ${h.times.map(t=>`<span class="habit-time-chip">🕐 ${t}</span>`).join('')}
-          </div>
+          <div class="habit-name">${h.emoji} ${escapeHtml(h.name)}</div>
+          ${h.time ? `<div class="habit-time">⏰ ${h.time}</div>` : ''}
+          <div class="habit-streak">🔥 متتالية: ${h.streak || 0} يوم</div>
         </div>
-        <div class="habit-actions">
-          ${allDone ? '<span style="font-size:1.4rem;">✅</span>' : ''}
-          <button class="btn btn-danger btn-icon btn-sm" onclick="deleteHabit('${h.id}')">🗑️</button>
-        </div>
+        <button class="habit-delete" onclick="deleteHabit(${h.id})">🗑️</button>
       </div>
-      <div class="habit-check-row">
-        ${h.times.map((t,i)=>{
-          const done = log.includes(i);
-          return `<button class="habit-check-btn ${done?'done':''}" onclick="toggleHabitCheck('${h.id}',${i})">
-            <span class="hcb-time">${t}</span>
-            <span class="hcb-status">${done?'✓ تم':'اضغط للتأكيد'}</span>
-          </button>`;
-        }).join('')}
-      </div>
-    </div>`;
+    `;
   }).join('');
 }
 
-// =====================================================
-// ICS EXPORT
-// =====================================================
-function exportICS() {
-  const lines = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//مذاكرتي//AR',
-    'CALSCALE:GREGORIAN',
-    'METHOD:PUBLISH',
-    'X-WR-CALNAME:مذاكرتي - تذكيرات + عادات',
-    'X-WR-TIMEZONE:Asia/Amman',
-  ];
-
-  // ---- Study Reminders ----
-  reminders.forEach(r => {
-    const sub = subjects.find(s=>s.id===r.subjectId);
-    const dtStart = toICSDate(r.date);
-    const typeLabels = { exam:'امتحان', quiz:'كويز', assignment:'واجب', other:'أخرى' };
-    // Main event
-    lines.push(
-      'BEGIN:VEVENT',
-      `UID:${r.id}@mthakrti`,
-      `DTSTAMP:${toICSDate(new Date().toISOString())}`,
-      `DTSTART:${dtStart}`,
-      `DTEND:${toICSDateEnd(r.date, 60)}`,
-      `SUMMARY:${typeLabels[r.type]||''} - ${r.name}${sub?' ('+sub.name+')':''}`,
-      `DESCRIPTION:${r.name}${sub?'\\nالمادة: '+sub.name:''}`,
-      'BEGIN:VALARM',
-      'TRIGGER:-PT60M',
-      'ACTION:DISPLAY',
-      `DESCRIPTION:تذكير: ${r.name}`,
-      'END:VALARM',
-      'END:VEVENT',
-    );
-    // Stage events
-    (r.stages||[]).forEach((st,i)=>{
-      lines.push(
-        'BEGIN:VEVENT',
-        `UID:${r.id}_stage${i}@mthakrti`,
-        `DTSTAMP:${toICSDate(new Date().toISOString())}`,
-        `DTSTART:${toICSDateAllDay(st.date)}`,
-        `DTEND:${toICSDateAllDay(st.date, 1)}`,
-        `SUMMARY:📌 ${st.label} - ${r.name}`,
-        `DESCRIPTION:${r.name}\\nالمرحلة: ${st.label}`,
-        'BEGIN:VALARM',
-        'TRIGGER:PT0S',
-        'ACTION:DISPLAY',
-        `DESCRIPTION:${st.label}: ${r.name}`,
-        'END:VALARM',
-        'END:VEVENT',
-      );
-    });
-  });
-
-  // ---- Daily Habits (RRULE:FREQ=DAILY) ----
+// ========== HOME ==========
+function renderHome() {
+  document.getElementById('stat-subjects').innerText = subjects.length;
+  document.getElementById('stat-reminders').innerText = reminders.length;
+  document.getElementById('stat-habits').innerText = habits.length;
+  
+  const today = new Date().toISOString().split('T')[0];
+  let completedCount = 0;
   habits.forEach(h => {
-    h.times.forEach((t, ti) => {
-      const [hh, mm] = t.split(':').map(Number);
-      const today = new Date();
-      today.setHours(hh, mm, 0, 0);
-      lines.push(
-        'BEGIN:VEVENT',
-        `UID:habit_${h.id}_${ti}@mthakrti`,
-        `DTSTAMP:${toICSDate(new Date().toISOString())}`,
-        `DTSTART:${toICSDateWithTime(today)}`,
-        `DTEND:${toICSDateWithTimeEnd(today, 15)}`,
-        `RRULE:FREQ=DAILY`,
-        `SUMMARY:🦷 ${h.name}`,
-        `DESCRIPTION:عادة يومية: ${h.name}\\nالوقت: ${t}`,
-        'BEGIN:VALARM',
-        'TRIGGER:-PT5M',
-        'ACTION:DISPLAY',
-        `DESCRIPTION:حان وقت: ${h.name}`,
-        'END:VALARM',
-        'END:VEVENT',
-      );
-    });
+    if (isHabitCompleted(h.id, today)) completedCount++;
   });
+  const percent = habits.length ? (completedCount / habits.length) * 100 : 0;
+  document.getElementById('today-progress').style.width = `${percent}%`;
+  document.getElementById('progress-text').innerText = `${completedCount}/${habits.length} عادة مكتملة اليوم`;
+  
+  const preview = document.getElementById('today-habits-preview');
+  if (habits.length === 0) {
+    preview.innerHTML = `<div class="card" style="text-align:center;color:var(--muted)">✨ أضف عاداتك الأولى لتتبع تقدمك</div>`;
+  } else {
+    preview.innerHTML = `
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">🦷 عادات اليوم</span>
+          <button class="add-btn" style="width:32px;height:32px;font-size:20px" onclick="goTo('habits')">👈</button>
+        </div>
+        ${habits.slice(0,3).map(h => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span>${h.emoji} ${escapeHtml(h.name)}</span>
+            <span style="color:${isHabitCompleted(h.id,today) ? 'var(--a3)' : 'var(--muted)'}">
+              ${isHabitCompleted(h.id,today) ? '✓ تم' : '○ لم يكتمل'}
+            </span>
+          </div>
+        `).join('')}
+        ${habits.length > 3 ? `<div style="text-align:center;margin-top:8px;color:var(--muted);font-size:0.7rem">+${habits.length-3} عادات أخرى</div>` : ''}
+      </div>
+    `;
+  }
+}
 
-  lines.push('END:VCALENDAR');
-
-  const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+// ========== EXPORT ICS ==========
+function exportAllICS() {
+  let ics = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//مذاكرتي//AR
+CALSCALE:GREGORIAN
+`;
+  
+  reminders.forEach(r => {
+    const dateStr = r.date.replace(/-/g, '');
+    const timeStr = (r.time || '09:00').replace(/:/g, '');
+    ics += `BEGIN:VEVENT
+UID:${r.id}@mz
+SUMMARY:${r.title}
+DTSTART;TZID=Asia/Amman:${dateStr}T${timeStr}
+DTEND;TZID=Asia/Amman:${dateStr}T${String(parseInt(timeStr.slice(0,2))+1).padStart(2,'0')}${timeStr.slice(2)}
+DESCRIPTION:تذكير من تطبيق مذاكرتي
+END:VEVENT
+`;
+  });
+  
+  habits.forEach(h => {
+    if (h.time) {
+      const timeStr = h.time.replace(/:/g, '');
+      ics += `BEGIN:VEVENT
+UID:habit-${h.id}@mz
+SUMMARY:${h.emoji} ${h.name}
+DTSTART;TZID=Asia/Amman:20260101T${timeStr}
+RRULE:FREQ=DAILY
+DESCRIPTION:عادة يومية - ${h.name}
+END:VEVENT
+`;
+    }
+  });
+  
+  ics += `END:VCALENDAR`;
+  
+  const blob = new Blob([ics], {type: 'text/calendar'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = 'مذاكرتي.ics'; a.click();
+  a.href = url;
+  a.download = `مذاكرتي_${new Date().toISOString().split('T')[0]}.ics`;
+  a.click();
   URL.revokeObjectURL(url);
-  toast('تم تنزيل ملف ICS ✅', 'success');
+  showToast('📅 تم تصدير التقويم بنجاح');
 }
 
-// ICS Date Helpers
-function toICSDate(iso) {
-  return iso.replace(/[-:]/g,'').replace(/\.\d+/,'').replace('T','T').slice(0,15)+'Z';
-}
-function toICSDateEnd(iso, addMinutes) {
-  const d = new Date(iso);
-  d.setMinutes(d.getMinutes()+addMinutes);
-  return d.toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'').slice(0,15)+'Z';
-}
-function toICSDateAllDay(iso) {
-  return 'DATE:' + iso.slice(0,10).replace(/-/g,'');
-}
-function toICSDateAllDay(iso, addDays=0) {
-  const d = new Date(iso);
-  d.setDate(d.getDate()+addDays);
-  return d.toISOString().slice(0,10).replace(/-/g,'');
-}
-function toICSDateWithTime(dateObj) {
-  // Format as local time YYYYMMDDTHHMMSS (no Z, use TZID)
-  const y = dateObj.getFullYear();
-  const mo = String(dateObj.getMonth()+1).padStart(2,'0');
-  const d = String(dateObj.getDate()).padStart(2,'0');
-  const h = String(dateObj.getHours()).padStart(2,'0');
-  const m = String(dateObj.getMinutes()).padStart(2,'0');
-  return `TZID=Asia/Amman:${y}${mo}${d}T${h}${m}00`;
-}
-function toICSDateWithTimeEnd(dateObj, addMin) {
-  const d2 = new Date(dateObj.getTime() + addMin*60000);
-  const y = d2.getFullYear();
-  const mo = String(d2.getMonth()+1).padStart(2,'0');
-  const d = String(d2.getDate()).padStart(2,'0');
-  const h = String(d2.getHours()).padStart(2,'0');
-  const m = String(d2.getMinutes()).padStart(2,'0');
-  return `TZID=Asia/Amman:${y}${mo}${d}T${h}${m}00`;
-}
-
-// =====================================================
-// UTILS
-// =====================================================
-function fmtDate(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  return d.toLocaleDateString('ar-JO', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
-}
-
-// =====================================================
-// INIT
-// =====================================================
-window.addEventListener('DOMContentLoaded', init);
-
-// Ask notification permission on first load
-window.addEventListener('DOMContentLoaded', () => {
-  if ('Notification' in window && Notification.permission === 'default') {
-    setTimeout(() => {
-      Notification.requestPermission().then(p => {
-        if (p === 'granted') { toast('تم تفعيل الإشعارات ✅', 'success'); scheduleHabitNotifications(); }
-        document.getElementById('notif-banner').style.display = p === 'default' ? 'flex' : 'none';
-      });
-    }, 2000);
+// ========== NOTIFICATIONS ==========
+function scheduleNotification(reminder) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    const eventDate = new Date(`${reminder.date}T${reminder.time || '09:00'}`);
+    const now = new Date();
+    const delay = eventDate - now;
+    if (delay > 0 && delay < 7 * 24 * 60 * 60 * 1000) {
+      setTimeout(() => {
+        new Notification('🔔 تذكير من مذاكرتي', {
+          body: reminder.title,
+          icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%237c6fff"%3E%3Cpath d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.93 6 11v5l-2 2v1h16v-1l-2-2z"/%3E%3C/svg%3E'
+        });
+      }, delay);
+    }
   }
-});
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('ar-EG', { year:'numeric', month:'long', day:'numeric' });
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
+
+// Request notification permission
+if ('Notification' in window && Notification.permission === 'default') {
+  Notification.requestPermission();
+}
+
+// Initial render
+window.onload = () => {
+  renderSubjects();
+  renderReminders();
+  renderHabits();
+  goTo('home');
+  
+  // Check for today's reminders
+  const today = new Date().toISOString().split('T')[0];
+  reminders.forEach(r => {
+    if (r.date === today) {
+      scheduleNotification(r);
+    }
+  });
+};
 </script>
 </body>
 </html>
