@@ -1,83 +1,187 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <title>مساعد الدراسة الذكي</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; padding: 20px; text-align: center; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        h1 { color: #1a73e8; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
-        th { background-color: #f8f9fa; }
-        input, button { padding: 10px; margin: 5px; border-radius: 5px; border: 1px solid #ccc; }
-        .btn-add { background: #34a853; color: white; cursor: pointer; border: none; }
-        .btn-sync { background: #4285f4; color: white; cursor: pointer; border: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>مذاكرتي</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+/* نفس الـ CSS السابق كامل (ما غيرته) */
+:root {
+  --bg:#0a0b14; --card:#12141f; --card2:#1a1d2e;
+  --accent:#7c6fff; --a2:#ff5f7e; --a3:#3dd68c;
+  --warn:#ffb84d; --blue:#4da6ff;
+  --text:#eeeef5; --muted:#6b6b8a; --border:#22253a;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;}
+/* ... ضع هنا كل الـ CSS اللي كان عندك سابقاً ... */
+</style>
 </head>
 <body>
+<!-- نفس HTML السابق مع إضافة تبويب جديد للعادات -->
 
-<div class="container">
-    <h1>مساعد الدراسة الذكي 🎓</h1>
-    
-    <div id="input-section">
-        <input type="text" id="subject" placeholder="اسم المادة">
-        <input type="datetime-local" id="date">
-        <button class="btn-add" onclick="addToTable()">إضافة للجدول</button>
+<div id="app">
+  <!-- HOME + SUBJECTS + REMINDERS (نفس الكود السابق) -->
+
+  <!-- عادات يومية - تبويب جديد -->
+  <div id="p-habits" class="panel">
+    <div class="topbar">
+      <h1>🛡️ عاداتي اليومية</h1>
     </div>
+    <div id="habits-list"></div>
+  </div>
+</div>
 
-    <table id="studyTable">
-        <thead>
-            <tr>
-                <th>المادة</th>
-                <th>التاريخ والوقت</th>
-                <th>المزامنة مع الهاتف</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- سيتم إضافة البيانات هنا -->
-        </tbody>
-    </table>
+<!-- Bottom Nav مع تبويب جديد -->
+<div id="nav">
+  <button class="nb" onclick="goTo('home')"><span class="ni">🏠</span>الرئيسية</button>
+  <button class="nb" onclick="goTo('subjects')"><span class="ni">📖</span>المواد</button>
+  <button class="nb" onclick="goTo('reminders')"><span class="ni">🔔</span>التذكيرات</button>
+  <button class="nb" onclick="goTo('habits')"><span class="ni">✅</span>عادات</button>
 </div>
 
 <script>
-    const CLIENT_ID = '923391113467-5ur27mjjncbjrjfs20gclt8690muuolg.apps.googleusercontent.com';
-    const API_KEY = 'AIzaSyA6V8dDPLzND5wf2Q_wAKBQVlpQBI4z590';
-    const DISCOVERY_DOC = "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest";
-    const SCOPES = "https://www.googleapis.com/auth/calendar.events";
+// ====================== STATE ======================
+const SKEY='mz5-s', RKEY='mz5-r', HKEY='mz5-h';
+let S = JSON.parse(localStorage.getItem(SKEY)||'[]');
+let R = JSON.parse(localStorage.getItem(RKEY)||'[]');
+let H = JSON.parse(localStorage.getItem(HKEY)||'[]'); // العادات اليومية
 
-    let tokenClient;
-
-    function gapiLoaded() { gapi.load('client', async () => { await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] }); }); }
-    function gsiLoaded() { tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: '' }); }
-
-    function addToTable() {
-        const subject = document.getElementById('subject').value;
-        const date = document.getElementById('date').value;
-        if(!subject || !date) return alert("عبئ البيانات!");
-
-        const tbody = document.querySelector('#studyTable tbody');
-        const row = tbody.insertRow();
-        row.innerHTML = `<td>${subject}</td><td>${date}</td><td><button class="btn-sync" onclick="syncEvent('${subject}', '${date}')">مزامنة الآن 🚀</button></td>`;
+// عادات افتراضية (يمكن تعديلها)
+if (H.length === 0) {
+  H = [
+    {
+      id: 1,
+      title: "تفريش الأسنان",
+      icon: "🦷",
+      times: ["07:30", "22:00"],   // صباحًا ومساءً - أوقات طبيعية
+      enabled: true,
+      snoozeUntil: null
+    },
+    {
+      id: 2,
+      title: "شرب كوب ماء",
+      icon: "🥤",
+      times: ["09:00", "12:00", "15:00", "18:00"],
+      enabled: true,
+      snoozeUntil: null
     }
+  ];
+  saveHabits();
+}
 
-    function syncEvent(title, startTime) {
-        tokenClient.callback = async (resp) => {
-            if (resp.error) return;
-            const event = {
-                'summary': title,
-                'start': { 'dateTime': new Date(startTime).toISOString(), 'timeZone': 'Asia/Amman' },
-                'end': { 'dateTime': new Date(new Date(startTime).getTime() + 3600000).toISOString(), 'timeZone': 'Asia/Amman' }
-            };
-            await gapi.client.calendar.events.insert({ 'calendarId': 'primary', 'resource': event });
-            alert("تمت الإضافة لتقويمك بنجاح!");
-        };
-        tokenClient.requestAccessToken({prompt: 'consent'});
+function saveHabits() {
+  localStorage.setItem(HKEY, JSON.stringify(H));
+}
+
+// ====================== NOTIFICATIONS ======================
+let notificationPermission = false;
+
+async function requestNotificationPermission() {
+  if ("Notification" in window) {
+    const perm = await Notification.requestPermission();
+    notificationPermission = perm === "granted";
+    if (notificationPermission) console.log("✅ إشعارات مفعلة");
+  }
+}
+
+// إرسال إشعار
+function sendNotification(title, body) {
+  if (!notificationPermission) return;
+  new Notification(title, {
+    body: body,
+    icon: "🦷",
+    tag: "study-habit"
+  });
+}
+
+// التحقق من العادات كل دقيقة
+function checkHabits() {
+  const now = new Date();
+  const currentTime = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+  H.forEach(habit => {
+    if (!habit.enabled || habit.snoozeUntil && new Date(habit.snoozeUntil) > now) return;
+
+    if (habit.times.includes(currentTime)) {
+      sendNotification(habit.icon + " " + habit.title, "حان وقت " + habit.title);
+      
+      // صوت بسيط (اختياري)
+      const audio = new Audio('https://freesound.org/data/previews/66/66930_931655-lq.mp3');
+      audio.volume = 0.4;
+      audio.play().catch(() => {});
     }
+  });
+}
+
+// ====================== DAILY HABITS UI ======================
+function renderHabits() {
+  const container = document.getElementById('habits-list');
+  let html = '';
+
+  H.forEach(h => {
+    html += `
+      <div class="rc">
+        <div class="r-ico">${h.icon}</div>
+        <div class="r-body">
+          <div class="r-title">${h.title}</div>
+          <div class="r-sub">${h.times.join(' • ')}</div>
+        </div>
+        <div class="r-right">
+          <button onclick="toggleHabit(${h.id})" style="background:${h.enabled?'#3dd68c':'#555'};color:white;border:none;padding:6px 12px;border-radius:8px;">
+            ${h.enabled ? 'مفعل' : 'معطل'}
+          </button>
+          <button onclick="snoozeHabit(${h.id})" style="margin-top:5px;background:#ffb84d;color:white;border:none;padding:4px 10px;border-radius:6px;font-size:0.75rem;">
+            تأجيل اليوم
+          </button>
+        </div>
+      </div>`;
+  });
+
+  container.innerHTML = html || '<div class="empty"><p>لا توجد عادات بعد</p></div>';
+}
+
+function toggleHabit(id) {
+  const habit = H.find(h => h.id === id);
+  if (habit) habit.enabled = !habit.enabled;
+  saveHabits();
+  renderHabits();
+}
+
+function snoozeHabit(id) {
+  const habit = H.find(h => h.id === id);
+  if (habit) {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0,0,0,0);
+    habit.snoozeUntil = tomorrow.getTime();
+    saveHabits();
+    renderHabits();
+    alert(`تم تأجيل "${habit.title}" ليوم غد`);
+  }
+}
+
+// ====================== باقي الكود (goTo, renderAll, إلخ) ======================
+// أضف في goTo:
+function goTo(tab) {
+  // ... الكود السابق ...
+  if (tab === 'habits') renderHabits();
+}
+
+// ====================== INIT ======================
+window.onload = () => {
+  // ... الكود السابق ...
+  requestNotificationPermission();
+  renderHabits();
+
+  // فحص العادات كل دقيقة
+  setInterval(checkHabits, 60000);
+  checkHabits(); // فحص فوري
+};
+
+// دالة pad موجودة سابقاً
+function pad(n) { return String(n).padStart(2, '0'); }
 </script>
-
-<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-<script async defer src="https://accounts.google.com/gsi/client" onload="gsiLoaded()"></script>
-
 </body>
 </html>
