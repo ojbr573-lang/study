@@ -2,190 +2,955 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>مذاكرتي</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+<meta name="theme-color" content="#7c6fff">
+<title>مذاكرتي - مدير المذاكرة والعادات</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
-/* === كل الـ CSS القديم اللي عندك (ما غيرته) === */
-:root{--bg:#0a0b14;--card:#12141f;--card2:#1a1d2e;--accent:#7c6fff;--a2:#ff5f7e;--a3:#3dd68c;--warn:#ffb84d;--blue:#4da6ff;--text:#eeeef5;--muted:#6b6b8a;--border:#22253a;}
-*{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;overflow:hidden;}
-/* ... (ضع هنا كل الـ CSS اللي كان عندك من قبل كامل بدون تغيير) ... */
-/* أضفت فقط هذه الستايلات الجديدة للعادات */
-.habit-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;gap:12px;}
-.habit-ico{font-size:1.8rem;flex-shrink:0;}
-.habit-info{flex:1;}
-.habit-name{font-weight:700;font-size:1rem;}
-.habit-times{font-size:0.85rem;color:var(--muted);}
+:root {
+  --bg: #0a0b14;
+  --card: #12141f;
+  --card2: #1a1d2e;
+  --accent: #7c6fff;
+  --accent-light: #9b90ff;
+  --a2: #ff5f7e;
+  --a3: #3dd68c;
+  --warn: #ffb84d;
+  --blue: #4da6ff;
+  --purple: #c084fc;
+  --text: #eeeef5;
+  --text-dim: #a0a0bb;
+  --muted: #6b6b8a;
+  --border: #22253a;
+  --success: #10b981;
+  --danger: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Cairo', sans-serif;
+  overflow: hidden;
+}
+
+#app {
+  height: 100%;
+  overflow-y: auto;
+  padding-bottom: 70px;
+  scroll-behavior: smooth;
+}
+
+.panel {
+  display: none;
+  padding: 20px 16px 80px;
+  animation: fadeIn 0.3s ease;
+}
+
+.panel.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.topbar h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.add-btn {
+  background: var(--accent);
+  border: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  font-size: 28px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(124, 111, 255, 0.3);
+}
+
+.add-btn:active {
+  transform: scale(0.95);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.2s;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.card-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.progress-bar {
+  background: var(--card2);
+  border-radius: 10px;
+  height: 8px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, var(--a3), var(--accent));
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.3s;
+}
+
+.stats-grid {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--card2);
+  border-radius: 16px;
+  padding: 12px;
+  flex: 1;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* Subject styles */
+.subject-item {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-right: 4px solid var(--accent);
+}
+
+.subject-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.subject-emoji {
+  font-size: 1.3rem;
+}
+
+.subject-days {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+/* Reminder styles */
+.reminder-card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.reminder-title {
+  font-weight: 700;
+}
+
+.reminder-date {
+  font-size: 0.8rem;
+  color: var(--accent);
+  margin-top: 6px;
+}
+
+.stage-badge {
+  display: inline-block;
+  background: var(--card2);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  margin-top: 8px;
+}
+
+/* Habit styles */
+.habit-card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.2s;
+  border: 1px solid var(--border);
+}
+
+.habit-card.completed {
+  background: linear-gradient(135deg, var(--card), rgba(61, 214, 140, 0.1));
+  border-color: var(--a3);
+}
+
+.habit-check {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--card2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.habit-check.done {
+  background: var(--a3);
+  border-color: var(--a3);
+}
+
+.habit-check.done::after {
+  content: "✓";
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.habit-info {
+  flex: 1;
+}
+
+.habit-name {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.habit-time {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.habit-streak {
+  font-size: 0.7rem;
+  color: var(--warn);
+  margin-top: 4px;
+}
+
+.habit-delete {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+}
+
+/* Modal styles */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.overlay.on {
+  display: flex;
+}
+
+.modal {
+  background: var(--card2);
+  border-radius: 32px 32px 24px 24px;
+  width: 100%;
+  max-width: 500px;
+  padding: 24px 20px 32px;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.handle {
+  width: 40px;
+  height: 4px;
+  background: var(--muted);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+
+.modal-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.field {
+  margin-bottom: 16px;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.fi, .field input, .field select {
+  width: 100%;
+  padding: 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.sub-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  width: 100%;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: all 0.2s;
+}
+
+.sub-btn:active {
+  transform: scale(0.98);
+}
+
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+}
+
+.ei {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+/* Bottom Navigation */
+#nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card);
+  backdrop-filter: blur(20px);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 16px 20px;
+  border-top: 1px solid var(--border);
+  z-index: 100;
+}
+
+.nb {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 8px 12px;
+  border-radius: 24px;
+}
+
+.nb .ni {
+  font-size: 1.5rem;
+}
+
+.nb.active {
+  color: var(--accent);
+  background: rgba(124, 111, 255, 0.1);
+}
+
+/* Quick actions */
+.quick-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.action-btn {
+  flex: 1;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn:active {
+  transform: scale(0.97);
+  background: var(--accent);
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--card2);
+  color: var(--text);
+  padding: 12px 24px;
+  border-radius: 40px;
+  font-size: 0.85rem;
+  z-index: 200;
+  animation: slideUp 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  border: 1px solid var(--accent);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--card);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 4px;
+}
 </style>
 </head>
 <body>
 <div id="app">
-  <!-- HOME + SUBJECTS + REMINDERS panels (نفس الكود القديم) -->
-  <!-- ... (كل الـ HTML اللي كان عندك من قبل) ... -->
+  <!-- Home Panel -->
+  <div id="p-home" class="panel">
+    <div class="topbar">
+      <h1>✨ مرحباً بك</h1>
+    </div>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="stat-subjects">0</div>
+        <div class="stat-label">مواد</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-reminders">0</div>
+        <div class="stat-label">تذكيرات</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-habits">0</div>
+        <div class="stat-label">عادات</div>
+      </div>
+    </div>
 
-  <!-- التبويب الجديد: عادات يومية -->
+    <div class="quick-actions">
+      <div class="action-btn" onclick="goTo('subjects')">📚 مواد جديدة</div>
+      <div class="action-btn" onclick="goTo('reminders')">⏰ تذكير جديد</div>
+      <div class="action-btn" onclick="goTo('habits')">🦷 إضافة عادة</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📖 إنجاز اليوم</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="today-progress" style="width: 0%"></div>
+      </div>
+      <div style="font-size: 0.85rem; color: var(--text-dim); text-align: center;" id="progress-text">
+        أكمل عاداتك اليومية
+      </div>
+    </div>
+
+    <div id="today-habits-preview"></div>
+  </div>
+
+  <!-- Subjects Panel -->
+  <div id="p-subjects" class="panel">
+    <div class="topbar">
+      <h1>📚 المواد</h1>
+      <button class="add-btn" onclick="openSubjectModal()">+</button>
+    </div>
+    <div id="subjects-list"></div>
+  </div>
+
+  <!-- Reminders Panel -->
+  <div id="p-reminders" class="panel">
+    <div class="topbar">
+      <h1>🔔 التذكيرات</h1>
+      <button class="add-btn" onclick="openReminderModal()">+</button>
+    </div>
+    <div id="reminders-list"></div>
+  </div>
+
+  <!-- Habits Panel -->
   <div id="p-habits" class="panel">
     <div class="topbar">
       <h1>🦷 عادات يومية</h1>
       <button class="add-btn" onclick="openHabitModal()">+</button>
     </div>
     <div id="habits-list"></div>
-    <button onclick="generateFullICS()" class="sub-btn" style="margin:20px 14px 10px;">📅 أنشئ ملف ICS كامل (تذكيرات + عادات)</button>
+    <button onclick="exportAllICS()" class="sub-btn" style="margin-top: 20px;">📅 تصدير التقويم (ICS)</button>
   </div>
 </div>
 
-<!-- Bottom Nav مع تبويب جديد -->
+<!-- Bottom Navigation -->
 <div id="nav">
   <button class="nb" onclick="goTo('home')"><span class="ni">🏠</span>الرئيسية</button>
   <button class="nb" onclick="goTo('subjects')"><span class="ni">📖</span>المواد</button>
   <button class="nb" onclick="goTo('reminders')"><span class="ni">🔔</span>التذكيرات</button>
-  <button class="nb on" onclick="goTo('habits')"><span class="ni">🦷</span>عادات</button>
+  <button class="nb" onclick="goTo('habits')"><span class="ni">🦷</span>العادات</button>
 </div>
 
-<!-- Habit Modal -->
-<div class="overlay" id="ov-h" onclick="if(event.target.id==='ov-h')closeOv('ov-h')">
+<!-- Modals -->
+<div class="overlay" id="ov-subject" onclick="if(event.target.id==='ov-subject')closeOv('ov-subject')">
   <div class="modal">
     <div class="handle"></div>
-    <div class="modal-title">➕ إضافة عادة يومية</div>
-    <div class="field"><label>اسم العادة</label><input class="fi" id="h-name" placeholder="مثال: تفريش الأسنان"></div>
-    <div class="field"><label>الوقت الأول (صباحي)</label><input class="fi" type="time" id="h-time1" value="07:30"></div>
-    <div class="field"><label>الوقت الثاني (مسائي)</label><input class="fi" type="time" id="h-time2" value="22:00"></div>
+    <div class="modal-title">📖 إضافة مادة</div>
+    <div class="field"><label>اسم المادة</label><input class="fi" id="subj-name" placeholder="مثال: رياضيات"></div>
+    <div class="field"><label>📅 عدد أيام المذاكرة</label><input class="fi" type="number" id="subj-days" placeholder="30" value="30"></div>
+    <button class="sub-btn" onclick="saveSubject()">💾 حفظ</button>
+  </div>
+</div>
+
+<div class="overlay" id="ov-reminder" onclick="if(event.target.id==='ov-reminder')closeOv('ov-reminder')">
+  <div class="modal">
+    <div class="handle"></div>
+    <div class="modal-title">🔔 إضافة تذكير</div>
+    <div class="field"><label>العنوان</label><input class="fi" id="rem-title" placeholder="مثال: اختبار رياضيات"></div>
+    <div class="field"><label>التاريخ</label><input class="fi" type="date" id="rem-date"></div>
+    <div class="field"><label>الوقت</label><input class="fi" type="time" id="rem-time" value="09:00"></div>
+    <button class="sub-btn" onclick="saveReminder()">💾 حفظ</button>
+  </div>
+</div>
+
+<div class="overlay" id="ov-habit" onclick="if(event.target.id==='ov-habit')closeOv('ov-habit')">
+  <div class="modal">
+    <div class="handle"></div>
+    <div class="modal-title">🦷 إضافة عادة</div>
+    <div class="field"><label>اسم العادة</label><input class="fi" id="habit-name" placeholder="مثال: تفريش الأسنان"></div>
+    <div class="field"><label>⏰ الوقت (اختياري)</label><input class="fi" type="time" id="habit-time"></div>
+    <div class="field"><label>🏷️ رمز تعبيري</label><input class="fi" id="habit-emoji" placeholder="🦷" value="✅" maxlength="2"></div>
     <button class="sub-btn" onclick="saveHabit()">💾 حفظ العادة</button>
   </div>
 </div>
 
 <script>
-// === كل الكود القديم اللي عندك (STATE + buildStages + ICS + renderAll ... إلخ) ===
-// (انسخ كل الـ script اللي كان عندك من قبل هنا)
+// ========== DATA STORES ==========
+let subjects = JSON.parse(localStorage.getItem('mz-subjects') || '[]');
+let reminders = JSON.parse(localStorage.getItem('mz-reminders') || '[]');
+let habits = JSON.parse(localStorage.getItem('mz-habits') || '[]');
+let habitLogs = JSON.parse(localStorage.getItem('mz-habit-logs') || '{}');
 
-// === الجزء الجديد: Daily Habits ===
-const HKEY = 'mz5-h';
-let H = JSON.parse(localStorage.getItem(HKEY) || '[]');
-
-// عادة تفريش الأسنان الافتراضية (طبيعية)
-if (H.length === 0) {
-  H = [{
-    id: Date.now(),
-    name: "🦷 تفريش الأسنان",
-    times: ["07:30", "22:00"],
-    emoji: "🦷"
-  }];
-  localStorage.setItem(HKEY, JSON.stringify(H));
+// Default habits
+if (habits.length === 0) {
+  habits = [
+    { id: Date.now(), name: "🦷 تفريش الأسنان", time: "07:30", emoji: "🦷", streak: 0 },
+    { id: Date.now() + 1, name: "📖 قراءة 10 دقائق", time: "20:00", emoji: "📖", streak: 0 }
+  ];
+  saveHabits();
 }
 
-function openHabitModal(editId = null) {
-  // يمكن إضافة تعديل لاحقاً
-  document.getElementById('ov-h').classList.add('on');
+let currentTab = 'home';
+
+// ========== HELPERS ==========
+function showToast(msg) {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerText = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2000);
 }
 
-function saveHabit() {
-  const name = document.getElementById('h-name').value.trim() || "عادة جديدة";
-  const t1 = document.getElementById('h-time1').value;
-  const t2 = document.getElementById('h-time2').value;
-  const times = [];
-  if (t1) times.push(t1);
-  if (t2) times.push(t2);
+function saveSubjects() { localStorage.setItem('mz-subjects', JSON.stringify(subjects)); }
+function saveReminders() { localStorage.setItem('mz-reminders', JSON.stringify(reminders)); }
+function saveHabits() { localStorage.setItem('mz-habits', JSON.stringify(habits)); }
+function saveHabitLogs() { localStorage.setItem('mz-habit-logs', JSON.stringify(habitLogs)); }
 
-  H.push({
-    id: Date.now(),
-    name,
-    times,
-    emoji: "✅"
-  });
-
-  localStorage.setItem(HKEY, JSON.stringify(H));
-  closeOv('ov-h');
-  renderHabits();
+function closeOv(id) {
+  document.getElementById(id).classList.remove('on');
 }
 
-function renderHabits() {
-  const container = document.getElementById('habits-list');
-  if (!H.length) {
-    container.innerHTML = `<div class="empty"><div class="ei">🦷</div><p>لا توجد عادات بعد</p></div>`;
+function goTo(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`p-${tab}`).classList.add('active');
+  document.querySelectorAll('.nb').forEach(btn => btn.classList.remove('active'));
+  event?.target?.closest('.nb')?.classList.add('active');
+  
+  if (tab === 'home') renderHome();
+  if (tab === 'subjects') renderSubjects();
+  if (tab === 'reminders') renderReminders();
+  if (tab === 'habits') renderHabits();
+}
+
+// ========== SUBJECTS ==========
+function openSubjectModal() { document.getElementById('ov-subject').classList.add('on'); }
+function saveSubject() {
+  const name = document.getElementById('subj-name').value.trim();
+  const days = parseInt(document.getElementById('subj-days').value);
+  if (!name) return showToast('الرجاء إدخال اسم المادة');
+  
+  subjects.push({ id: Date.now(), name, days: days || 30, createdAt: new Date().toISOString() });
+  saveSubjects();
+  closeOv('ov-subject');
+  document.getElementById('subj-name').value = '';
+  renderSubjects();
+  if (currentTab === 'home') renderHome();
+  showToast('✅ تم إضافة المادة');
+}
+
+function deleteSubject(id) {
+  subjects = subjects.filter(s => s.id !== id);
+  saveSubjects();
+  renderSubjects();
+  if (currentTab === 'home') renderHome();
+  showToast('🗑️ تم حذف المادة');
+}
+
+function renderSubjects() {
+  const container = document.getElementById('subjects-list');
+  if (!subjects.length) {
+    container.innerHTML = `<div class="empty"><div class="ei">📚</div><p>لا توجد مواد بعد</p><p style="font-size:0.8rem">أضف مادة جديدة للمذاكرة</p></div>`;
     return;
   }
-  container.innerHTML = H.map(h => `
-    <div class="habit-card">
-      <div class="habit-ico">${h.emoji}</div>
-      <div class="habit-info">
-        <div class="habit-name">${h.name}</div>
-        <div class="habit-times">⏰ ${h.times.join(' • ')}</div>
+  container.innerHTML = subjects.map(s => `
+    <div class="subject-item">
+      <div class="subject-name">
+        <span class="subject-emoji">📘</span>
+        ${escapeHtml(s.name)}
       </div>
+      <div class="subject-days">⏱️ مدة المذاكرة: ${s.days} يوم</div>
+      <button onclick="deleteSubject(${s.id})" style="background:none;border:none;color:var(--danger);margin-top:8px;font-size:0.75rem">🗑️ حذف</button>
     </div>
   `).join('');
 }
 
-// توليد ICS كامل (تذكيرات + عادات يومية متكررة)
-function generateFullICS() {
+// ========== REMINDERS ==========
+function openReminderModal() { 
+  document.getElementById('rem-date').valueAsDate = new Date();
+  document.getElementById('ov-reminder').classList.add('on'); 
+}
+
+function saveReminder() {
+  const title = document.getElementById('rem-title').value.trim();
+  const date = document.getElementById('rem-date').value;
+  const time = document.getElementById('rem-time').value;
+  if (!title) return showToast('الرجاء إدخال عنوان التذكير');
+  
+  reminders.push({ id: Date.now(), title, date, time, createdAt: new Date().toISOString() });
+  saveReminders();
+  closeOv('ov-reminder');
+  document.getElementById('rem-title').value = '';
+  renderReminders();
+  if (currentTab === 'home') renderHome();
+  showToast('✅ تم إضافة التذكير');
+  scheduleNotification({ title, date, time });
+}
+
+function deleteReminder(id) {
+  reminders = reminders.filter(r => r.id !== id);
+  saveReminders();
+  renderReminders();
+  if (currentTab === 'home') renderHome();
+  showToast('🗑️ تم حذف التذكير');
+}
+
+function renderReminders() {
+  const container = document.getElementById('reminders-list');
+  if (!reminders.length) {
+    container.innerHTML = `<div class="empty"><div class="ei">🔔</div><p>لا توجد تذكيرات</p></div>`;
+    return;
+  }
+  const sorted = [...reminders].sort((a,b) => new Date(a.date) - new Date(b.date));
+  container.innerHTML = sorted.map(r => `
+    <div class="reminder-card">
+      <div class="reminder-title">📌 ${escapeHtml(r.title)}</div>
+      <div class="reminder-date">📅 ${formatDate(r.date)} ${r.time ? '⏰ ' + r.time : ''}</div>
+      <button onclick="deleteReminder(${r.id})" style="background:none;border:none;color:var(--danger);margin-top:8px;font-size:0.7rem">🗑️ حذف</button>
+    </div>
+  `).join('');
+}
+
+// ========== HABITS ==========
+function openHabitModal() { document.getElementById('ov-habit').classList.add('on'); }
+
+function saveHabit() {
+  const name = document.getElementById('habit-name').value.trim();
+  const time = document.getElementById('habit-time').value;
+  const emoji = document.getElementById('habit-emoji').value || '✅';
+  if (!name) return showToast('الرجاء إدخال اسم العادة');
+  
+  habits.push({ id: Date.now(), name, time, emoji, streak: 0 });
+  saveHabits();
+  closeOv('ov-habit');
+  document.getElementById('habit-name').value = '';
+  document.getElementById('habit-time').value = '';
+  renderHabits();
+  if (currentTab === 'home') renderHome();
+  showToast('✅ تم إضافة العادة');
+}
+
+function deleteHabit(id) {
+  habits = habits.filter(h => h.id !== id);
+  saveHabits();
+  renderHabits();
+  if (currentTab === 'home') renderHome();
+  showToast('🗑️ تم حذف العادة');
+}
+
+function toggleHabit(habitId, dateStr) {
+  if (!habitLogs[habitId]) habitLogs[habitId] = {};
+  habitLogs[habitId][dateStr] = !habitLogs[habitId][dateStr];
+  saveHabitLogs();
+  
+  // Update streak
+  const habit = habits.find(h => h.id === habitId);
+  if (habit) {
+    let streak = 0;
+    let currentDate = new Date();
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(currentDate);
+      d.setDate(currentDate.getDate() - i);
+      const dStr = d.toISOString().split('T')[0];
+      if (habitLogs[habitId]?.[dStr]) streak++;
+      else break;
+    }
+    habit.streak = streak;
+    saveHabits();
+  }
+  
+  renderHabits();
+  if (currentTab === 'home') renderHome();
+}
+
+function isHabitCompleted(habitId, dateStr) {
+  return habitLogs[habitId]?.[dateStr] || false;
+}
+
+function renderHabits() {
+  const container = document.getElementById('habits-list');
+  if (!habits.length) {
+    container.innerHTML = `<div class="empty"><div class="ei">🦷</div><p>لا توجد عادات بعد</p><p style="font-size:0.8rem">أضف عادة يومية لتتبع تقدمك</p></div>`;
+    return;
+  }
+  
+  const today = new Date().toISOString().split('T')[0];
+  
+  container.innerHTML = habits.map(h => {
+    const completed = isHabitCompleted(h.id, today);
+    return `
+      <div class="habit-card ${completed ? 'completed' : ''}">
+        <div class="habit-check ${completed ? 'done' : ''}" onclick="toggleHabit(${h.id}, '${today}')"></div>
+        <div class="habit-info">
+          <div class="habit-name">${h.emoji} ${escapeHtml(h.name)}</div>
+          ${h.time ? `<div class="habit-time">⏰ ${h.time}</div>` : ''}
+          <div class="habit-streak">🔥 متتالية: ${h.streak || 0} يوم</div>
+        </div>
+        <button class="habit-delete" onclick="deleteHabit(${h.id})">🗑️</button>
+      </div>
+    `;
+  }).join('');
+}
+
+// ========== HOME ==========
+function renderHome() {
+  document.getElementById('stat-subjects').innerText = subjects.length;
+  document.getElementById('stat-reminders').innerText = reminders.length;
+  document.getElementById('stat-habits').innerText = habits.length;
+  
+  const today = new Date().toISOString().split('T')[0];
+  let completedCount = 0;
+  habits.forEach(h => {
+    if (isHabitCompleted(h.id, today)) completedCount++;
+  });
+  const percent = habits.length ? (completedCount / habits.length) * 100 : 0;
+  document.getElementById('today-progress').style.width = `${percent}%`;
+  document.getElementById('progress-text').innerText = `${completedCount}/${habits.length} عادة مكتملة اليوم`;
+  
+  const preview = document.getElementById('today-habits-preview');
+  if (habits.length === 0) {
+    preview.innerHTML = `<div class="card" style="text-align:center;color:var(--muted)">✨ أضف عاداتك الأولى لتتبع تقدمك</div>`;
+  } else {
+    preview.innerHTML = `
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">🦷 عادات اليوم</span>
+          <button class="add-btn" style="width:32px;height:32px;font-size:20px" onclick="goTo('habits')">👈</button>
+        </div>
+        ${habits.slice(0,3).map(h => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span>${h.emoji} ${escapeHtml(h.name)}</span>
+            <span style="color:${isHabitCompleted(h.id,today) ? 'var(--a3)' : 'var(--muted)'}">
+              ${isHabitCompleted(h.id,today) ? '✓ تم' : '○ لم يكتمل'}
+            </span>
+          </div>
+        `).join('')}
+        ${habits.length > 3 ? `<div style="text-align:center;margin-top:8px;color:var(--muted);font-size:0.7rem">+${habits.length-3} عادات أخرى</div>` : ''}
+      </div>
+    `;
+  }
+}
+
+// ========== EXPORT ICS ==========
+function exportAllICS() {
   let ics = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//مذاكرتي//AR
+CALSCALE:GREGORIAN
 `;
-
-  // 1. التذكيرات الدراسية (نفس الدالة القديمة)
-  R.forEach(r => {
-    const stages = r.stages || buildStages(r);
-    stages.forEach(st => {
-      ics += makeSingleEventICS(st);
-    });
+  
+  reminders.forEach(r => {
+    const dateStr = r.date.replace(/-/g, '');
+    const timeStr = (r.time || '09:00').replace(/:/g, '');
+    ics += `BEGIN:VEVENT
+UID:${r.id}@mz
+SUMMARY:${r.title}
+DTSTART;TZID=Asia/Amman:${dateStr}T${timeStr}
+DTEND;TZID=Asia/Amman:${dateStr}T${String(parseInt(timeStr.slice(0,2))+1).padStart(2,'0')}${timeStr.slice(2)}
+DESCRIPTION:تذكير من تطبيق مذاكرتي
+END:VEVENT
+`;
   });
-
-  // 2. العادات اليومية (متكررة يوميًا)
-  H.forEach(h => {
-    h.times.forEach(time => {
+  
+  habits.forEach(h => {
+    if (h.time) {
+      const timeStr = h.time.replace(/:/g, '');
       ics += `BEGIN:VEVENT
-UID:${Date.now()}-${h.id}-${time}@mz
-SUMMARY:${h.name}
-DTSTART;TZID=Asia/Amman:20260408T${time.replace(':','')}
+UID:habit-${h.id}@mz
+SUMMARY:${h.emoji} ${h.name}
+DTSTART;TZID=Asia/Amman:20260101T${timeStr}
 RRULE:FREQ=DAILY
 DESCRIPTION:عادة يومية - ${h.name}
 END:VEVENT
 `;
-    });
+    }
   });
-
+  
   ics += `END:VCALENDAR`;
-
+  
   const blob = new Blob([ics], {type: 'text/calendar'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'مذاكرتي_كامل.ics';
+  a.download = `مذاكرتي_${new Date().toISOString().split('T')[0]}.ics`;
   a.click();
   URL.revokeObjectURL(url);
-
-  alert('✅ تم إنشاء ملف ICS كامل!\nافتحه في Google Calendar أو Apple Calendar');
+  showToast('📅 تم تصدير التقويم بنجاح');
 }
 
-function makeSingleEventICS(st) {
-  // دالة مساعدة بسيطة (يمكنك دمجها مع makeICS القديمة)
-  return `BEGIN:VEVENT
-SUMMARY:${st.title}
-DTSTART;TZID=Asia/Amman:${st.date.replace(/-/g,'')}T${(st.time||'09:00').replace(':','')}
-DTEND;TZID=Asia/Amman:${st.date.replace(/-/g,'')}T${(st.time ? (parseInt(st.time.split(':')[0])+1)+':00' : '10:00').replace(':','')}
-DESCRIPTION:${st.desc||''}
-END:VEVENT
-`;
+// ========== NOTIFICATIONS ==========
+function scheduleNotification(reminder) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    const eventDate = new Date(`${reminder.date}T${reminder.time || '09:00'}`);
+    const now = new Date();
+    const delay = eventDate - now;
+    if (delay > 0 && delay < 7 * 24 * 60 * 60 * 1000) {
+      setTimeout(() => {
+        new Notification('🔔 تذكير من مذاكرتي', {
+          body: reminder.title,
+          icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%237c6fff"%3E%3Cpath d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.93 6 11v5l-2 2v1h16v-1l-2-2z"/%3E%3C/svg%3E'
+        });
+      }, delay);
+    }
+  }
 }
 
-// طلب إذن الإشعارات
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('ar-EG', { year:'numeric', month:'long', day:'numeric' });
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
+
+// Request notification permission
 if ('Notification' in window && Notification.permission === 'default') {
   Notification.requestPermission();
 }
 
-// تحديث الـ renderAll ليشمل العادات
-const oldRenderAll = renderAll;
-renderAll = function() {
-  oldRenderAll();
-  if (curTab === 'habits') renderHabits();
-};
-
-// تهيئة أولية
+// Initial render
 window.onload = () => {
-  renderAll();
+  renderSubjects();
+  renderReminders();
   renderHabits();
-  goTo('home'); // ابدأ في الرئيسية
+  goTo('home');
+  
+  // Check for today's reminders
+  const today = new Date().toISOString().split('T')[0];
+  reminders.forEach(r => {
+    if (r.date === today) {
+      scheduleNotification(r);
+    }
+  });
 };
 </script>
 </body>
