@@ -624,13 +624,71 @@
             const password = document.getElementById('auth-password').value;
             if (!email || !password) return showToast('يرجى ملء كافة الحقول', 'error');
 
+            const btn = document.querySelector('#auth-form .btn-primary');
+            btn.disabled = true;
+            btn.innerText = 'جاري الدخول...';
+
             try {
                 const { error } = await sb.auth.signInWithPassword({ email, password });
-                if (error) throw error;
+                if (error) {
+                    if (error.message.includes('Email not confirmed')) {
+                        showToast('البريد الإلكتروني لم يتم تأكيده بعد', 'error');
+                        showResendOption(email);
+                        return;
+                    }
+                    throw error;
+                }
                 showToast('تم تسجيل الدخول بنجاح', 'success');
                 closeModal();
             } catch (e) {
                 showToast(e.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'دخول';
+            }
+        }
+
+        function showResendOption(email) {
+            const form = document.getElementById('auth-form');
+            const resendDiv = document.createElement('div');
+            resendDiv.style.marginTop = '15px';
+            resendDiv.style.padding = '10px';
+            resendDiv.style.background = 'rgba(245, 158, 11, 0.1)';
+            resendDiv.style.borderRadius = 'var(--radius-sm)';
+            resendDiv.style.border = '1px solid var(--warning)';
+            resendDiv.innerHTML = `
+                <p style="font-size:0.8rem; margin-bottom:8px; color:var(--warning);">هل تريد إعادة إرسال رابط التأكيد؟</p>
+                <button class="btn btn-secondary" style="font-size:0.8rem; padding:6px;" onclick="handleResendConfirmation('${email}')">إعادة إرسال الرابط 📧</button>
+            `;
+            // إزالة أي رسالة سابقة
+            const old = document.getElementById('resend-container');
+            if (old) old.remove();
+            resendDiv.id = 'resend-container';
+            form.appendChild(resendDiv);
+        }
+
+        async function handleResendConfirmation(email) {
+            const btn = document.querySelector('#resend-container button');
+            btn.disabled = true;
+            btn.innerText = 'جاري الإرسال...';
+            try {
+                // في Supabase، إعادة الإرسال تتم عبر signUp مرة أخرى لنفس الإيميل أو عبر دالة مخصصة إذا كانت متوفرة
+                // الطريقة الأضمن هي استخدام resend
+                const { error } = await sb.auth.resend({
+                    type: 'signup',
+                    email: email
+                });
+                if (error) throw error;
+                showToast('تم إرسال رابط التأكيد، تفقد بريدك', 'success');
+            } catch (e) {
+                if (e.message.includes('rate limit')) {
+                    showToast('تم تجاوز حد الإرسال، يرجى المحاولة بعد ساعة', 'error');
+                } else {
+                    showToast(e.message, 'error');
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'إعادة إرسال الرابط 📧';
             }
         }
 
@@ -639,13 +697,26 @@
             const password = document.getElementById('auth-password').value;
             if (!email || !password) return showToast('يرجى ملء كافة الحقول', 'error');
 
+            const btn = document.querySelector('#auth-form .btn-secondary');
+            btn.disabled = true;
+            btn.innerText = 'جاري التسجيل...';
+
             try {
                 const { error } = await sb.auth.signUp({ email, password });
-                if (error) throw error;
+                if (error) {
+                    if (error.message.includes('rate limit')) {
+                        showToast('تم تجاوز حد الطلبات، يرجى المحاولة لاحقاً (بعد ساعة تقريباً)', 'error');
+                        return;
+                    }
+                    throw error;
+                }
                 showToast('تحقق من بريدك الإلكتروني لتأكيد الحساب', 'info');
                 closeModal();
             } catch (e) {
                 showToast(e.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'تسجيل جديد';
             }
         }
 
