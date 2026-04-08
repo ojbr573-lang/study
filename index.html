@@ -1,1651 +1,938 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>مذاكرتي</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <style>
-    /* ===== CSS Variables ===== */
-    :root {
-      --primary: #4f46e5;
-      --primary-light: #818cf8;
-      --primary-dark: #3730a3;
-      --secondary: #06b6d4;
-      --accent: #f59e0b;
-      --danger: #ef4444;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --bg: #0f172a;
-      --bg2: #1e293b;
-      --bg3: #334155;
-      --card: #1e293b;
-      --card2: #273548;
-      --border: #334155;
-      --text: #f1f5f9;
-      --text2: #94a3b8;
-      --text3: #64748b;
-      --radius: 14px;
-      --radius-sm: 8px;
-      --shadow: 0 4px 24px rgba(0,0,0,0.4);
-      --transition: 0.2s ease;
-      --navbar-h: 68px;
-    }
-
-    /* ===== Reset & Base ===== */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
-    button { font-family: 'Cairo', sans-serif; cursor: pointer; border: none; outline: none; }
-    input, select, textarea { font-family: 'Cairo', sans-serif; outline: none; border: none; }
-    a { text-decoration: none; color: inherit; }
-    ul { list-style: none; }
-
-    /* ===== Scrollbar ===== */
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: var(--bg2); }
-    ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 4px; }
-
-    /* ===== App Layout ===== */
-    #app { display: flex; flex-direction: column; min-height: 100vh; }
-
-    /* ===== Top Header ===== */
-    .top-header {
-      position: sticky; top: 0; z-index: 100;
-      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-      padding: 14px 20px;
-      display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 2px 16px rgba(79,70,229,0.4);
-    }
-    .top-header h1 { font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
-    .top-header .subtitle { font-size: 0.72rem; color: rgba(255,255,255,0.7); }
-    .header-actions { display: flex; gap: 8px; }
-    .header-btn {
-      background: rgba(255,255,255,0.15); color: #fff; border-radius: var(--radius-sm);
-      padding: 7px 12px; font-size: 0.78rem; font-weight: 600;
-      transition: background var(--transition);
-      display: flex; align-items: center; gap: 5px;
-    }
-    .header-btn:hover { background: rgba(255,255,255,0.25); }
-
-    /* ===== Pages ===== */
-    .page { display: none; flex: 1; padding: 16px 16px calc(var(--navbar-h) + 16px); overflow-y: auto; }
-    .page.active { display: block; }
-
-    /* ===== Bottom Navbar ===== */
-    .bottom-nav {
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
-      height: var(--navbar-h);
-      background: var(--bg2);
-      border-top: 1px solid var(--border);
-      display: flex; align-items: stretch;
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
-    }
-    .nav-item {
-      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 3px; color: var(--text3); font-size: 0.68rem; font-weight: 600;
-      transition: color var(--transition); cursor: pointer;
-      position: relative;
-    }
-    .nav-item .nav-icon { font-size: 1.5rem; line-height: 1; transition: transform var(--transition); }
-    .nav-item.active { color: var(--primary-light); }
-    .nav-item.active .nav-icon { transform: translateY(-2px); }
-    .nav-item.active::after {
-      content: ''; position: absolute; top: 0; left: 20%; right: 20%;
-      height: 2px; background: var(--primary-light); border-radius: 0 0 4px 4px;
-    }
-
-    /* ===== Section Headers ===== */
-    .section-title {
-      font-size: 1.1rem; font-weight: 700; color: var(--text);
-      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
-    }
-    .section-title span { color: var(--primary-light); }
-
-    /* ===== Cards ===== */
-    .card {
-      background: var(--card); border-radius: var(--radius);
-      padding: 16px; margin-bottom: 12px;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-    }
-    .card-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 10px; }
-
-    /* ===== Buttons ===== */
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-      padding: 10px 18px; border-radius: var(--radius-sm);
-      font-size: 0.85rem; font-weight: 700;
-      transition: all var(--transition);
-    }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
-    .btn-secondary { background: var(--bg3); color: var(--text); }
-    .btn-secondary:hover { background: #475569; }
-    .btn-danger { background: var(--danger); color: #fff; }
-    .btn-danger:hover { background: #dc2626; }
-    .btn-success { background: var(--success); color: #fff; }
-    .btn-success:hover { background: #059669; }
-    .btn-warning { background: var(--warning); color: #1a1a1a; }
-    .btn-warning:hover { background: #d97706; }
-    .btn-full { width: 100%; }
-    .btn-sm { padding: 6px 12px; font-size: 0.78rem; }
-    .btn-icon { padding: 8px; border-radius: var(--radius-sm); font-size: 1rem; }
-
-    /* ===== Form Controls ===== */
-    .form-group { margin-bottom: 12px; }
-    .form-label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
-    .form-input, .form-select, .form-textarea {
-      width: 100%; background: var(--bg3); color: var(--text);
-      border: 1px solid var(--border); border-radius: var(--radius-sm);
-      padding: 10px 12px; font-size: 0.85rem;
-      transition: border-color var(--transition);
-    }
-    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--primary-light); }
-    .form-textarea { resize: vertical; min-height: 80px; }
-    .form-select option { background: var(--bg2); }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-    /* ===== Modal ===== */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0; z-index: 999;
-      background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
-      align-items: flex-end; justify-content: center;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal {
-      background: var(--bg2); border-radius: var(--radius) var(--radius) 0 0;
-      padding: 20px; width: 100%; max-width: 520px;
-      max-height: 90vh; overflow-y: auto;
-      animation: slideUp 0.25s ease;
-    }
-    @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-    .modal-title { font-size: 1rem; font-weight: 700; }
-    .modal-close { background: var(--bg3); color: var(--text2); border-radius: 50%; width: 30px; height: 30px; font-size: 1rem; }
-    .modal-close:hover { color: var(--text); }
-
-    /* ===== Toast ===== */
-    #toast-container { position: fixed; top: 16px; right: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
-    .toast {
-      background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm);
-      padding: 12px 16px; font-size: 0.82rem; font-weight: 600;
-      box-shadow: var(--shadow); animation: fadeInRight 0.3s ease;
-      display: flex; align-items: center; gap: 8px; min-width: 220px;
-    }
-    .toast.success { border-color: var(--success); color: var(--success); }
-    .toast.error { border-color: var(--danger); color: var(--danger); }
-    .toast.info { border-color: var(--primary-light); color: var(--primary-light); }
-    @keyframes fadeInRight { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
-    /* ===== Badge / Chip ===== */
-    .badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: 3px 8px; border-radius: 20px; font-size: 0.72rem; font-weight: 700;
-    }
-    .badge-primary { background: rgba(79,70,229,0.2); color: var(--primary-light); }
-    .badge-success { background: rgba(16,185,129,0.2); color: var(--success); }
-    .badge-warning { background: rgba(245,158,11,0.2); color: var(--warning); }
-    .badge-danger { background: rgba(239,68,68,0.2); color: var(--danger); }
-    .badge-secondary { background: var(--bg3); color: var(--text2); }
-
-    /* ===== Progress Bar ===== */
-    .progress-bar { height: 6px; background: var(--bg3); border-radius: 10px; overflow: hidden; }
-    .progress-fill { height: 100%; border-radius: 10px; transition: width 0.4s ease; }
-
-    /* ===== Divider ===== */
-    .divider { height: 1px; background: var(--border); margin: 14px 0; }
-
-    /* ========================================
-       PAGE: HOME
-       ======================================== */
-    .home-hero {
-      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-      border-radius: var(--radius); padding: 20px;
-      margin-bottom: 14px; position: relative; overflow: hidden;
-    }
-    .home-hero::before {
-      content: '📚'; position: absolute; right: -10px; top: -10px;
-      font-size: 6rem; opacity: 0.08;
-    }
-    .home-hero h2 { font-size: 1.2rem; font-weight: 800; color: #fff; }
-    .home-hero p { font-size: 0.8rem; color: rgba(255,255,255,0.75); margin-top: 4px; }
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-    .stat-card {
-      background: var(--card); border-radius: var(--radius);
-      padding: 14px; border: 1px solid var(--border);
-      display: flex; flex-direction: column; gap: 4px;
-    }
-    .stat-card .stat-num { font-size: 1.6rem; font-weight: 800; color: var(--primary-light); }
-    .stat-card .stat-label { font-size: 0.72rem; color: var(--text2); }
-    .upcoming-list { display: flex; flex-direction: column; gap: 8px; }
-    .upcoming-item {
-      background: var(--card); border-radius: var(--radius-sm);
-      padding: 12px; border: 1px solid var(--border);
-      display: flex; align-items: flex-start; gap: 10px;
-    }
-    .upcoming-item .ui-icon { font-size: 1.3rem; flex-shrink: 0; }
-    .upcoming-item .ui-info { flex: 1; }
-    .upcoming-item .ui-name { font-size: 0.85rem; font-weight: 700; }
-    .upcoming-item .ui-date { font-size: 0.72rem; color: var(--text2); margin-top: 2px; }
-    .upcoming-item .ui-days { font-size: 0.72rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; }
-    .days-urgent { background: rgba(239,68,68,0.2); color: var(--danger); }
-    .days-soon { background: rgba(245,158,11,0.2); color: var(--warning); }
-    .days-ok { background: rgba(16,185,129,0.2); color: var(--success); }
-    .empty-state { text-align: center; padding: 32px 16px; color: var(--text3); }
-    .empty-state .es-icon { font-size: 3rem; margin-bottom: 10px; }
-    .empty-state p { font-size: 0.85rem; }
-
-    /* ========================================
-       PAGE: SUBJECTS
-       ======================================== */
-    .subjects-grid { display: flex; flex-direction: column; gap: 12px; }
-    .subject-card {
-      background: var(--card); border-radius: var(--radius);
-      border: 1px solid var(--border); overflow: hidden;
-    }
-    .subject-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 16px;
-    }
-    .subject-color-bar { width: 4px; height: 40px; border-radius: 4px; flex-shrink: 0; margin-left: 10px; }
-    .subject-info { flex: 1; }
-    .subject-name { font-size: 0.95rem; font-weight: 700; }
-    .subject-meta { font-size: 0.72rem; color: var(--text2); margin-top: 3px; }
-    .subject-actions { display: flex; gap: 6px; }
-    .subject-body { padding: 0 16px 14px; }
-    .subject-stats { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
-    .chapters-list { display: flex; flex-direction: column; gap: 6px; }
-    .chapter-item {
-      background: var(--bg3); border-radius: var(--radius-sm);
-      padding: 8px 12px; display: flex; align-items: center; gap: 8px;
-    }
-    .chapter-item .ch-check {
-      width: 20px; height: 20px; border-radius: 50%;
-      background: var(--bg2); border: 2px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; flex-shrink: 0; font-size: 0.7rem;
-      transition: all var(--transition);
-    }
-    .chapter-item.done .ch-check { background: var(--success); border-color: var(--success); color: #fff; }
-    .chapter-item .ch-name { flex: 1; font-size: 0.82rem; }
-    .chapter-item.done .ch-name { text-decoration: line-through; color: var(--text3); }
-    .chapter-item .ch-del { color: var(--text3); font-size: 0.9rem; background: none; }
-    .chapter-item .ch-del:hover { color: var(--danger); }
-
-    /* Subject colors */
-    .color-dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; cursor: pointer; border: 2px solid transparent; }
-    .color-dot.selected { border-color: #fff; }
-    .color-picker { display: flex; gap: 8px; flex-wrap: wrap; padding: 6px 0; }
-
-    /* ========================================
-       PAGE: REMINDERS
-       ======================================== */
-    .reminders-list { display: flex; flex-direction: column; gap: 10px; }
-    .reminder-card {
-      background: var(--card); border-radius: var(--radius);
-      border: 1px solid var(--border); padding: 14px;
-      position: relative; overflow: hidden;
-    }
-    .reminder-card::before {
-      content: ''; position: absolute; right: 0; top: 0; bottom: 0;
-      width: 4px;
-    }
-    .reminder-card.type-exam::before { background: var(--danger); }
-    .reminder-card.type-quiz::before { background: var(--warning); }
-    .reminder-card.type-assignment::before { background: var(--secondary); }
-    .reminder-card.type-other::before { background: var(--primary-light); }
-    .reminder-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-    .reminder-name { font-size: 0.9rem; font-weight: 700; }
-    .reminder-subject { font-size: 0.72rem; color: var(--text2); margin-top: 2px; }
-    .reminder-date { font-size: 0.75rem; color: var(--text2); margin-top: 6px; }
-    .reminder-stages { margin-top: 10px; }
-    .stage-list { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
-    .stage-item {
-      display: flex; align-items: center; gap: 6px;
-      background: var(--bg3); border-radius: var(--radius-sm);
-      padding: 6px 10px; font-size: 0.78rem;
-    }
-    .stage-item .si-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .stage-item .si-label { flex: 1; }
-    .stage-item .si-date { color: var(--text2); font-size: 0.72rem; }
-    .stage-item.si-done { opacity: 0.5; }
-    .stage-item.si-done .si-label { text-decoration: line-through; }
-    .reminder-footer { margin-top: 10px; display: flex; align-items: center; justify-content: space-between; }
-
-    /* ========================================
-       PAGE: HABITS
-       ======================================== */
-    .habits-list { display: flex; flex-direction: column; gap: 10px; }
-    .habit-card {
-      background: var(--card); border-radius: var(--radius);
-      border: 1px solid var(--border); padding: 14px;
-      position: relative; overflow: hidden;
-    }
-    .habit-header { display: flex; align-items: center; justify-content: space-between; }
-    .habit-info { flex: 1; }
-    .habit-name { font-size: 0.95rem; font-weight: 700; }
-    .habit-times { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
-    .habit-time-chip {
-      background: rgba(79,70,229,0.2); color: var(--primary-light);
-      border-radius: 20px; padding: 3px 10px; font-size: 0.75rem; font-weight: 700;
-    }
-    .habit-check-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-    .habit-check-btn {
-      flex: 1; min-width: 80px; padding: 8px;
-      border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: 700;
-      border: 1.5px solid var(--border); background: var(--bg3); color: var(--text2);
-      transition: all var(--transition); display: flex; flex-direction: column; align-items: center; gap: 2px;
-    }
-    .habit-check-btn .hcb-time { font-size: 0.85rem; }
-    .habit-check-btn .hcb-status { font-size: 0.65rem; }
-    .habit-check-btn.done { border-color: var(--success); background: rgba(16,185,129,0.15); color: var(--success); }
-    .habit-check-btn:not(.done):hover { border-color: var(--primary-light); color: var(--primary-light); }
-    .habit-streak { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 0.78rem; color: var(--text2); }
-    .habit-streak .streak-fire { font-size: 1rem; }
-    .habit-actions { display: flex; gap: 6px; align-items: center; }
-
-    /* Habit today summary */
-    .habits-today-banner {
-      background: linear-gradient(135deg, #0f4c81, #1e293b);
-      border: 1px solid rgba(6,182,212,0.3);
-      border-radius: var(--radius); padding: 14px;
-      margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;
-    }
-    .htb-left h3 { font-size: 0.9rem; font-weight: 700; }
-    .htb-left p { font-size: 0.75rem; color: var(--text2); margin-top: 3px; }
-    .htb-right { text-align: center; }
-    .htb-right .htb-count { font-size: 1.8rem; font-weight: 800; color: var(--secondary); }
-    .htb-right .htb-label { font-size: 0.65rem; color: var(--text2); }
-
-    /* ===== Notification Permission Banner ===== */
-    #notif-banner {
-      background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05));
-      border: 1px solid rgba(245,158,11,0.3);
-      border-radius: var(--radius); padding: 12px 14px;
-      display: flex; align-items: center; gap: 10px;
-      margin-bottom: 14px; font-size: 0.8rem;
-    }
-    #notif-banner .nb-icon { font-size: 1.4rem; flex-shrink: 0; }
-    #notif-banner .nb-text { flex: 1; color: var(--text2); }
-    #notif-banner .nb-text strong { color: var(--text); }
-
-    /* ===== Responsive helpers ===== */
-    @media (min-width: 480px) {
-      .stats-grid { grid-template-columns: repeat(4, 1fr); }
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>مذاكرتي - MyStudyApp</title>
+    <meta name="theme-color" content="#0f172a" />
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <link rel="stylesheet" href="/src/index.css">
 </head>
-<body>
-<div id="app">
+<body class="bg-bg-main text-text-main overflow-x-hidden pb-24">
+    <div id="root"></div>
 
-  <!-- Top Header -->
-  <header class="top-header">
-    <div>
-      <h1>📖 مذاكرتي</h1>
-      <div class="subtitle" id="header-date"></div>
-    </div>
-    <div class="header-actions">
-      <button class="header-btn" onclick="exportICS()">📅 ICS</button>
-      <button class="header-btn" id="sync-btn" onclick="openSyncModal()">🔄 مزامنة</button>
-    </div>
-  </header>
+    <script>
+        // ==========================================
+        // تهيئة Supabase
+        // ==========================================
+        const SUPABASE_URL = 'https://llumspntrtdgwmodpmyc.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_FXUJGp0pX57KCkdMyQWj5A_xEbKkIfD';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  <!-- Pages -->
-  <!-- HOME -->
-  <section class="page active" id="page-home">
-    <div class="home-hero">
-      <h2 id="home-greeting">مرحباً! 👋</h2>
-      <p id="home-subtext">جاهز للمذاكرة اليوم؟</p>
-    </div>
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-num" id="stat-subjects">0</div><div class="stat-label">📚 مادة</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-reminders">0</div><div class="stat-label">🔔 تذكير</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-habits">0</div><div class="stat-label">🦷 عادة</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-chapters">0</div><div class="stat-label">📑 فصل</div></div>
-    </div>
-    <div class="section-title"><span>⏰</span> القادم قريباً</div>
-    <div class="upcoming-list" id="upcoming-list">
-      <div class="empty-state"><div class="es-icon">🎉</div><p>لا يوجد تذكيرات قريبة</p></div>
-    </div>
-    <div class="divider"></div>
-    <div class="section-title"><span>🦷</span> عاداتك اليوم</div>
-    <div id="home-habits-preview"></div>
-  </section>
+        // ==========================================
+        // الثوابت والأنواع
+        // ==========================================
+        const STORAGE_PREFIX = 'mthakrti_';
+        const COLORS = ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#8b5cf6', '#f97316', '#14b8a6', '#6366f1'];
 
-  <!-- SUBJECTS -->
-  <section class="page" id="page-subjects">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <div class="section-title" style="margin-bottom:0"><span>📚</span> موادي</div>
-      <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-subject')">+ مادة جديدة</button>
-    </div>
-    <div class="subjects-grid" id="subjects-list"></div>
-  </section>
+        // ==========================================
+        // إدارة الحالة
+        // ==========================================
+        class State {
+            constructor() {
+                this.loadLocal();
+                this.user = null;
+                this.cloudConfig = null;
+                if (this.habits.length === 0) this.seedInitialData();
+            }
 
-  <!-- REMINDERS -->
-  <section class="page" id="page-reminders">
-    <div id="notif-banner" style="display:none;">
-      <div class="nb-icon">🔔</div>
-      <div class="nb-text"><strong>فعّل الإشعارات</strong> لتلقي تذكيرات العادات والدراسة</div>
-      <button class="btn btn-warning btn-sm" onclick="requestNotifPermission()">تفعيل</button>
-    </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <div class="section-title" style="margin-bottom:0"><span>🔔</span> التذكيرات</div>
-      <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-reminder')">+ تذكير جديد</button>
-    </div>
-    <div class="reminders-list" id="reminders-list"></div>
-  </section>
+            loadLocal() {
+                this.subjects = JSON.parse(localStorage.getItem(STORAGE_PREFIX + 'subjects') || '[]');
+                this.reminders = JSON.parse(localStorage.getItem(STORAGE_PREFIX + 'reminders') || '[]');
+                this.habits = JSON.parse(localStorage.getItem(STORAGE_PREFIX + 'habits') || '[]');
+                this.habitLogs = JSON.parse(localStorage.getItem(STORAGE_PREFIX + 'habitLogs') || '{}');
+                this.gasUrl = localStorage.getItem(STORAGE_PREFIX + 'gasUrl') || '';
+                this.gasSecret = localStorage.getItem(STORAGE_PREFIX + 'gasSecret') || '';
+            }
 
-  <!-- HABITS -->
-  <section class="page" id="page-habits">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <div class="section-title" style="margin-bottom:0"><span>🦷</span> عادات يومية</div>
-      <button class="btn btn-primary btn-sm" onclick="openModal('modal-add-habit')">+ عادة جديدة</button>
-    </div>
-    <div class="habits-today-banner">
-      <div class="htb-left">
-        <h3>تقدمك اليوم</h3>
-        <p id="habit-today-progress-text">جاري الحساب...</p>
-      </div>
-      <div class="htb-right">
-        <div class="htb-count" id="habit-today-count">0/0</div>
-        <div class="htb-label">تم/الكل</div>
-      </div>
-    </div>
-    <div class="habits-list" id="habits-list"></div>
-  </section>
+            seedInitialData() {
+                this.habits = [{
+                    id: crypto.randomUUID(),
+                    name: '🦷 تفريش الأسنان',
+                    times: ['07:30', '22:00'],
+                    createdAt: Date.now(),
+                    streak: 0
+                }];
+                this.save();
+            }
 
-  <!-- Bottom Navbar -->
-  <nav class="bottom-nav">
-    <div class="nav-item active" data-page="home" onclick="switchPage('home',this)">
-      <div class="nav-icon">🏠</div>
-      <span>الرئيسية</span>
-    </div>
-    <div class="nav-item" data-page="subjects" onclick="switchPage('subjects',this)">
-      <div class="nav-icon">📚</div>
-      <span>المواد</span>
-    </div>
-    <div class="nav-item" data-page="reminders" onclick="switchPage('reminders',this)">
-      <div class="nav-icon">🔔</div>
-      <span>التذكيرات</span>
-    </div>
-    <div class="nav-item" data-page="habits" onclick="switchPage('habits',this)">
-      <div class="nav-icon">🦷</div>
-      <span>عادات يومية</span>
-    </div>
-  </nav>
-</div>
+            save() {
+                localStorage.setItem(STORAGE_PREFIX + 'subjects', JSON.stringify(this.subjects));
+                localStorage.setItem(STORAGE_PREFIX + 'reminders', JSON.stringify(this.reminders));
+                localStorage.setItem(STORAGE_PREFIX + 'habits', JSON.stringify(this.habits));
+                localStorage.setItem(STORAGE_PREFIX + 'habitLogs', JSON.stringify(this.habitLogs));
+                localStorage.setItem(STORAGE_PREFIX + 'gasUrl', this.gasUrl);
+                localStorage.setItem(STORAGE_PREFIX + 'gasSecret', this.gasSecret);
+            }
 
-<!-- Toast Container -->
-<div id="toast-container"></div>
+            getPackage() {
+                return {
+                    subjects: this.subjects,
+                    reminders: this.reminders,
+                    habits: this.habits,
+                    habitLogs: this.habitLogs
+                };
+            }
 
-<!-- ========================================
-     MODALS
-     ======================================== -->
-
-<!-- ===== GAS Sync Modal ===== -->
-<div class="modal-overlay" id="modal-sync">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">🔄 مزامنة مع Google Calendar</div>
-      <button class="modal-close" onclick="closeModal('modal-sync')">✕</button>
-    </div>
-
-    <!-- Settings Section -->
-    <div id="sync-settings">
-      <div style="background:rgba(79,70,229,0.1);border:1px solid rgba(79,70,229,0.3);border-radius:var(--radius-sm);padding:12px;margin-bottom:14px;font-size:0.8rem;color:var(--text2);line-height:1.7;">
-        📌 يتم الإرسال عبر <strong style="color:var(--text);">Google Apps Script</strong> مباشرةً إلى تقويمك الشخصي.
-        لا حاجة لتسجيل دخول.
-      </div>
-
-      <!-- GAS URL -->
-      <div class="form-group">
-        <label class="form-label">رابط GAS Script (exec URL)</label>
-        <input type="text" class="form-input" id="gas-url-input"
-          placeholder="https://script.google.com/macros/s/.../exec"
-          style="font-size:0.72rem;direction:ltr;" />
-        <div style="font-size:0.72rem;color:var(--text3);margin-top:4px;">يُحفظ تلقائياً في localStorage</div>
-      </div>
-
-      <!-- Secret Token (اختياري) -->
-      <div class="form-group">
-        <label class="form-label">Secret Token <span style="color:var(--text3);font-weight:400;">(اختياري — أضفه إذا أضفته في GAS)</span></label>
-        <input type="password" class="form-input" id="gas-secret-input" placeholder="اتركه فارغاً إن لم يكن موجوداً" />
-      </div>
-
-      <!-- What to sync -->
-      <div class="form-group">
-        <label class="form-label">ماذا تريد أن تزامن؟</label>
-        <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;cursor:pointer;">
-            <input type="checkbox" id="sync-reminders-check" checked style="width:16px;height:16px;accent-color:var(--primary);" />
-            📝 التذكيرات الدراسية (+ مراحلها)
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;cursor:pointer;">
-            <input type="checkbox" id="sync-habits-check" checked style="width:16px;height:16px;accent-color:var(--primary);" />
-            🦷 العادات اليومية (متكررة يومياً)
-          </label>
-        </div>
-      </div>
-
-      <button class="btn btn-primary btn-full" onclick="startGasSync()" id="start-sync-btn">
-        🚀 ابدأ المزامنة
-      </button>
-    </div>
-
-    <!-- Progress Section (hidden initially) -->
-    <div id="sync-progress" style="display:none;">
-      <div style="text-align:center;padding:10px 0 6px;">
-        <div style="font-size:1.6rem;margin-bottom:6px;" id="sync-progress-icon">⏳</div>
-        <div style="font-size:0.9rem;font-weight:700;" id="sync-progress-title">جاري الإرسال...</div>
-        <div style="font-size:0.78rem;color:var(--text2);margin-top:4px;" id="sync-progress-sub"></div>
-      </div>
-      <div class="progress-bar" style="margin:12px 0;">
-        <div class="progress-fill" id="sync-progress-bar" style="width:0%;background:var(--primary);transition:width 0.3s ease;"></div>
-      </div>
-      <div id="sync-log" style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px;max-height:180px;overflow-y:auto;font-size:0.72rem;color:var(--text2);font-family:monospace;direction:ltr;"></div>
-    </div>
-
-    <!-- Result Section (hidden initially) -->
-    <div id="sync-result" style="display:none;text-align:center;padding:10px 0;">
-      <div style="font-size:2.5rem;margin-bottom:8px;" id="sync-result-icon"></div>
-      <div style="font-size:1rem;font-weight:700;margin-bottom:4px;" id="sync-result-title"></div>
-      <div style="font-size:0.78rem;color:var(--text2);" id="sync-result-sub"></div>
-      <div style="display:flex;gap:8px;margin-top:14px;">
-        <button class="btn btn-secondary" style="flex:1" onclick="resetSyncModal()">إعادة المحاولة</button>
-        <button class="btn btn-primary" style="flex:1" onclick="closeModal('modal-sync')">إغلاق</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Add Subject Modal -->
-<div class="modal-overlay" id="modal-add-subject">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">➕ إضافة مادة</div>
-      <button class="modal-close" onclick="closeModal('modal-add-subject')">✕</button>
-    </div>
-    <div class="form-group">
-      <label class="form-label">اسم المادة *</label>
-      <input type="text" class="form-input" id="new-subject-name" placeholder="مثال: رياضيات، فيزياء..." />
-    </div>
-    <div class="form-group">
-      <label class="form-label">اختر اللون</label>
-      <div class="color-picker" id="subject-color-picker"></div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">ملاحظات (اختياري)</label>
-      <textarea class="form-textarea" id="new-subject-notes" placeholder="أي ملاحظات عن المادة..." style="min-height:60px;"></textarea>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-primary" style="flex:1" onclick="addSubject()">حفظ</button>
-      <button class="btn btn-secondary" onclick="closeModal('modal-add-subject')">إلغاء</button>
-    </div>
-  </div>
-</div>
-
-<!-- Add Chapter Modal -->
-<div class="modal-overlay" id="modal-add-chapter">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">📑 إضافة فصل</div>
-      <button class="modal-close" onclick="closeModal('modal-add-chapter')">✕</button>
-    </div>
-    <div class="form-group">
-      <label class="form-label">اسم الفصل / الوحدة *</label>
-      <input type="text" class="form-input" id="new-chapter-name" placeholder="مثال: الفصل الأول - المتجهات" />
-    </div>
-    <button class="btn btn-primary btn-full" onclick="addChapter()">إضافة</button>
-  </div>
-</div>
-
-<!-- Add Reminder Modal -->
-<div class="modal-overlay" id="modal-add-reminder">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">🔔 تذكير جديد</div>
-      <button class="modal-close" onclick="closeModal('modal-add-reminder')">✕</button>
-    </div>
-    <div class="form-group">
-      <label class="form-label">اسم التذكير *</label>
-      <input type="text" class="form-input" id="new-reminder-name" placeholder="مثال: امتحان الفيزياء، كويز الرياضيات..." />
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">النوع *</label>
-        <select class="form-select" id="new-reminder-type" onchange="updateReminderStages()">
-          <option value="exam">📝 امتحان</option>
-          <option value="quiz">✏️ كويز</option>
-          <option value="assignment">📋 واجب</option>
-          <option value="other">📌 أخرى</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">المادة</label>
-        <select class="form-select" id="new-reminder-subject"></select>
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">التاريخ والوقت *</label>
-      <input type="datetime-local" class="form-input" id="new-reminder-date" />
-    </div>
-    <div class="form-group" id="reminder-stages-container">
-      <label class="form-label">مراحل التذكير التلقائية</label>
-      <div id="reminder-stages-preview" style="font-size:0.78rem;color:var(--text2);padding:8px;background:var(--bg3);border-radius:var(--radius-sm);"></div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-primary" style="flex:1" onclick="addReminder()">حفظ</button>
-      <button class="btn btn-secondary" onclick="closeModal('modal-add-reminder')">إلغاء</button>
-    </div>
-  </div>
-</div>
-
-<!-- Add Habit Modal -->
-<div class="modal-overlay" id="modal-add-habit">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">🦷 عادة جديدة</div>
-      <button class="modal-close" onclick="closeModal('modal-add-habit')">✕</button>
-    </div>
-    <div class="form-group">
-      <label class="form-label">اسم العادة *</label>
-      <input type="text" class="form-input" id="new-habit-name" placeholder="مثال: شرب الماء، تمارين، قراءة..." />
-    </div>
-    <div class="form-group">
-      <label class="form-label">الأوقات اليومية</label>
-      <div id="habit-times-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;"></div>
-      <div style="display:flex;gap:8px;">
-        <input type="time" class="form-input" id="new-habit-time-input" style="flex:1;" />
-        <button class="btn btn-secondary btn-sm" onclick="addHabitTimeInput()">+ إضافة</button>
-      </div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn btn-primary" style="flex:1" onclick="saveNewHabit()">حفظ</button>
-      <button class="btn btn-secondary" onclick="closeModal('modal-add-habit')">إلغاء</button>
-    </div>
-  </div>
-</div>
-
-<script>
-// =====================================================
-// DATA LAYER - localStorage
-// =====================================================
-const DB = {
-  get(key, def=[]) {
-    try { return JSON.parse(localStorage.getItem('mthakrti_' + key)) ?? def; }
-    catch { return def; }
-  },
-  set(key, val) { localStorage.setItem('mthakrti_' + key, JSON.stringify(val)); },
-};
-
-// App State
-let subjects   = DB.get('subjects', []);
-let reminders  = DB.get('reminders', []);
-let habits     = DB.get('habits', []);
-let habitLogs  = DB.get('habitLogs', {}); // { "YYYY-MM-DD": { habitId: [timeIndex, ...] } }
-
-// Subject colors palette
-const COLORS = ['#ef4444','#f97316','#f59e0b','#10b981','#06b6d4','#3b82f6','#6366f1','#8b5cf6','#ec4899','#14b8a6'];
-let selectedSubjectColor = COLORS[5];
-let currentChapterSubjectId = null;
-
-// =====================================================
-// INIT
-// =====================================================
-function init() {
-  seedDefaultHabits();
-  updateHeaderDate();
-  updateReminderStagesPreview();
-  renderAll();
-  checkNotificationPermission();
-  scheduleHabitNotifications();
-  resetHabitLogsIfNewDay();
-}
-
-function seedDefaultHabits() {
-  // Add default toothbrushing habit if no habits exist
-  if (habits.length === 0) {
-    habits.push({
-      id: 'habit_' + Date.now(),
-      name: '🦷 تفريش الأسنان',
-      times: ['07:30', '22:00'],
-      createdAt: new Date().toISOString(),
-      streak: 0,
-    });
-    DB.set('habits', habits);
-  }
-}
-
-function resetHabitLogsIfNewDay() {
-  const today = todayStr();
-  const lastDay = DB.get('lastActiveDay', '');
-  if (lastDay !== today) {
-    DB.set('lastActiveDay', today);
-    // Logs persist per day by key, nothing to reset
-  }
-}
-
-function todayStr() {
-  return new Date().toISOString().slice(0,10);
-}
-
-// =====================================================
-// NAVIGATION
-// =====================================================
-function switchPage(name, el) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  el.classList.add('active');
-  if (name === 'home') renderHome();
-  if (name === 'subjects') renderSubjects();
-  if (name === 'reminders') renderReminders();
-  if (name === 'habits') renderHabits();
-}
-
-// =====================================================
-// MODALS
-// =====================================================
-function openModal(id) {
-  document.getElementById(id).classList.add('open');
-  if (id === 'modal-add-subject') buildColorPicker();
-  if (id === 'modal-add-reminder') populateReminderSubjectSelect();
-  if (id === 'modal-add-habit') resetHabitForm();
-}
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-}
-// Close on overlay click
-document.querySelectorAll('.modal-overlay').forEach(o => {
-  o.addEventListener('click', e => { if(e.target === o) o.classList.remove('open'); });
-});
-
-// =====================================================
-// TOAST
-// =====================================================
-function toast(msg, type='info', dur=2800) {
-  const t = document.createElement('div');
-  t.className = 'toast ' + type;
-  const icons = { success:'✅', error:'❌', info:'ℹ️' };
-  t.innerHTML = `<span>${icons[type]||'ℹ️'}</span> ${msg}`;
-  document.getElementById('toast-container').appendChild(t);
-  setTimeout(() => t.remove(), dur);
-}
-
-// =====================================================
-// NOTIFICATIONS
-// =====================================================
-function checkNotificationPermission() {
-  if (!('Notification' in window)) return;
-  if (Notification.permission === 'default') {
-    document.getElementById('notif-banner').style.display = 'flex';
-  }
-}
-
-async function requestNotifPermission() {
-  if (!('Notification' in window)) { toast('المتصفح لا يدعم الإشعارات', 'error'); return; }
-  const perm = await Notification.requestPermission();
-  if (perm === 'granted') {
-    toast('تم تفعيل الإشعارات ✅', 'success');
-    document.getElementById('notif-banner').style.display = 'none';
-    scheduleHabitNotifications();
-  } else {
-    toast('لم يتم تفعيل الإشعارات', 'error');
-  }
-}
-
-function scheduleHabitNotifications() {
-  // Simple: check every minute if it's time for a habit
-  setInterval(() => {
-    if (Notification.permission !== 'granted') return;
-    const now = new Date();
-    const hm = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-    const today = todayStr();
-    habits.forEach(h => {
-      h.times.forEach((t, idx) => {
-        if (t === hm) {
-          const log = (habitLogs[today]?.[h.id] || []);
-          if (!log.includes(idx)) {
-            new Notification('مذاكرتي - عادة يومية', {
-              body: `حان وقت: ${h.name} 🕐 ${t}`,
-              icon: '📖'
-            });
-          }
+            applyPackage(data) {
+                if (!data) return;
+                this.subjects = data.subjects || [];
+                this.reminders = data.reminders || [];
+                this.habits = data.habits || [];
+                this.habitLogs = data.habitLogs || {};
+                this.save();
+            }
         }
-      });
-    });
-  }, 60000);
-}
 
-// =====================================================
-// HEADER DATE
-// =====================================================
-function updateHeaderDate() {
-  const d = new Date();
-  const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
-  document.getElementById('header-date').textContent = d.toLocaleDateString('ar-JO', opts);
-}
+        const state = new State();
 
-// =====================================================
-// RENDER ALL
-// =====================================================
-function renderAll() {
-  renderHome();
-  renderSubjects();
-  renderReminders();
-  renderHabits();
-}
+        // ==========================================
+        // منطق السحابة (Supabase)
+        // ==========================================
+        async function syncToCloud() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) return openAuthModal();
 
-// =====================================================
-// HOME PAGE
-// =====================================================
-function renderHome() {
-  // Stats
-  document.getElementById('stat-subjects').textContent = subjects.length;
-  document.getElementById('stat-reminders').textContent = reminders.length;
-  document.getElementById('stat-habits').textContent = habits.length;
-  const totalChapters = subjects.reduce((a,s)=>a+(s.chapters||[]).length,0);
-  document.getElementById('stat-chapters').textContent = totalChapters;
+            showToast('جاري المزامنة...', 'info');
+            try {
+                const { error } = await supabaseClient
+                    .from('user_configs')
+                    .upsert({
+                        user_id: user.id,
+                        script_url: state.gasUrl,
+                        study_data: state.getPackage()
+                    }, { onConflict: 'user_id' });
 
-  // Greeting
-  const h = new Date().getHours();
-  const greet = h < 12 ? 'صباح الخير ☀️' : h < 17 ? 'مساء الخير 🌤️' : 'مساء النور 🌙';
-  document.getElementById('home-greeting').textContent = greet;
+                if (error) throw error;
+                showToast('تمت المزامنة بنجاح ✅', 'success');
+            } catch (err) {
+                console.error(err);
+                showToast('فشلت المزامنة ❌', 'danger');
+            }
+        }
 
-  // Upcoming
-  const ul = document.getElementById('upcoming-list');
-  const now = Date.now();
-  const upcoming = reminders
-    .map(r => ({ ...r, ms: new Date(r.date).getTime() - now }))
-    .filter(r => r.ms > 0)
-    .sort((a,b) => a.ms - b.ms)
-    .slice(0,5);
+        async function loadFromCloud() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) return;
 
-  if (!upcoming.length) {
-    ul.innerHTML = '<div class="empty-state"><div class="es-icon">🎉</div><p>لا يوجد تذكيرات قريبة</p></div>';
-  } else {
-    ul.innerHTML = upcoming.map(r => {
-      const days = Math.ceil(r.ms / 86400000);
-      const cls = days <= 1 ? 'days-urgent' : days <= 3 ? 'days-soon' : 'days-ok';
-      const typeIcons = { exam:'📝', quiz:'✏️', assignment:'📋', other:'📌' };
-      const sub = subjects.find(s=>s.id===r.subjectId);
-      return `<div class="upcoming-item">
-        <div class="ui-icon">${typeIcons[r.type]||'📌'}</div>
-        <div class="ui-info">
-          <div class="ui-name">${r.name}</div>
-          <div class="ui-date">${sub?sub.name+' · ':''} ${fmtDate(r.date)}</div>
-        </div>
-        <div class="ui-days ${cls}">${days===0?'اليوم':days+'يوم'}</div>
-      </div>`;
-    }).join('');
-  }
+            try {
+                const { data, error } = await supabaseClient
+                    .from('user_configs')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .single();
 
-  // Habits today preview
-  const habitsPreview = document.getElementById('home-habits-preview');
-  if (!habits.length) {
-    habitsPreview.innerHTML = '<div class="empty-state" style="padding:16px"><p>لا توجد عادات بعد</p></div>';
-    return;
-  }
-  const today = todayStr();
-  const totalChecks = habits.reduce((a,h)=>a+h.times.length,0);
-  const doneChecks = habits.reduce((a,h)=>{
-    const log = habitLogs[today]?.[h.id]||[];
-    return a + log.length;
-  },0);
-  habitsPreview.innerHTML = `
-    <div style="background:var(--card);border-radius:var(--radius);padding:14px;border:1px solid var(--border);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <span style="font-size:0.85rem;font-weight:700;">تذكيرات العادات</span>
-        <span class="badge badge-${doneChecks===totalChecks?'success':'primary'}">${doneChecks}/${totalChecks} مكتمل</span>
-      </div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${totalChecks?Math.round(doneChecks/totalChecks*100):0}%;background:var(--success);"></div></div>
-      <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;">
-        ${habits.map(h=>{
-          const log = habitLogs[today]?.[h.id]||[];
-          const allDone = log.length >= h.times.length;
-          return `<div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;">
-            <span style="color:${allDone?'var(--success)':'var(--text3)'};">${allDone?'✅':'⬜'}</span>
-            <span style="flex:1;">${h.name}</span>
-            <span style="color:var(--text2);font-size:0.72rem;">${h.times.join(' · ')}</span>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`;
-}
+                if (error && error.code !== 'PGRST116') throw error;
+                if (data) {
+                    state.cloudConfig = data;
+                    state.gasUrl = data.script_url || state.gasUrl;
+                    state.applyPackage(data.study_data);
+                    renderApp();
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
 
-// =====================================================
-// SUBJECTS PAGE
-// =====================================================
-function buildColorPicker() {
-  const cp = document.getElementById('subject-color-picker');
-  cp.innerHTML = COLORS.map(c=>`
-    <div class="color-dot ${c===selectedSubjectColor?'selected':''}" 
-         style="background:${c}" onclick="selectColor('${c}')"></div>`).join('');
-}
+        async function saveScriptUrl() {
+            const url = document.getElementById('settings-gas-url').value;
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) return openAuthModal();
 
-function selectColor(c) {
-  selectedSubjectColor = c;
-  buildColorPicker();
-}
+            try {
+                const { error } = await supabaseClient
+                    .from('user_configs')
+                    .upsert({
+                        user_id: user.id,
+                        script_url: url,
+                        study_data: state.getPackage()
+                    }, { onConflict: 'user_id' });
 
-function addSubject() {
-  const name = document.getElementById('new-subject-name').value.trim();
-  if (!name) { toast('أدخل اسم المادة', 'error'); return; }
-  subjects.push({
-    id: 'sub_' + Date.now(),
-    name,
-    color: selectedSubjectColor,
-    notes: document.getElementById('new-subject-notes').value.trim(),
-    chapters: [],
-    createdAt: new Date().toISOString()
-  });
-  DB.set('subjects', subjects);
-  document.getElementById('new-subject-name').value = '';
-  document.getElementById('new-subject-notes').value = '';
-  closeModal('modal-add-subject');
-  toast('تمت إضافة المادة ✅', 'success');
-  renderAll();
-}
+                if (error) throw error;
+                state.gasUrl = url;
+                state.save();
+                showToast('تم حفظ الرابط بنجاح', 'success');
+            } catch (err) {
+                showToast('فشل الحفظ', 'danger');
+            }
+        }
 
-function deleteSubject(id) {
-  if (!confirm('هل تريد حذف هذه المادة وكل فصولها؟')) return;
-  subjects = subjects.filter(s=>s.id!==id);
-  DB.set('subjects', subjects);
-  renderAll();
-  toast('تم حذف المادة', 'info');
-}
+        // ==========================================
+        // واجهة المستخدم الرئيسية
+        // ==========================================
+        function renderApp() {
+            const root = document.getElementById('root');
+            if (!root) return;
 
-function openAddChapterModal(subjectId) {
-  currentChapterSubjectId = subjectId;
-  document.getElementById('new-chapter-name').value = '';
-  openModal('modal-add-chapter');
-}
+            root.innerHTML = `
+                <div class="min-h-screen flex flex-col">
+                    <!-- Header -->
+                    <header class="p-4 flex justify-between items-center bg-bg-card border-b border-white/5">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center font-bold">م</div>
+                            <span class="font-bold">مذاكرتي</span>
+                        </div>
+                        <div id="auth-status" class="flex items-center gap-3">
+                            <!-- Auth status injected here -->
+                        </div>
+                    </header>
 
-function addChapter() {
-  const name = document.getElementById('new-chapter-name').value.trim();
-  if (!name) { toast('أدخل اسم الفصل', 'error'); return; }
-  const sub = subjects.find(s=>s.id===currentChapterSubjectId);
-  if (!sub) return;
-  sub.chapters.push({ id: 'ch_' + Date.now(), name, done: false });
-  DB.set('subjects', subjects);
-  closeModal('modal-add-chapter');
-  toast('تمت إضافة الفصل', 'success');
-  renderSubjects();
-  renderHome();
-}
+                    <!-- Main Content -->
+                    <main id="content" class="flex-1 p-4 max-w-2xl mx-auto w-full">
+                        <!-- Sections injected here -->
+                    </main>
 
-function toggleChapter(subId, chId) {
-  const sub = subjects.find(s=>s.id===subId);
-  if (!sub) return;
-  const ch = sub.chapters.find(c=>c.id===chId);
-  if (ch) { ch.done = !ch.done; DB.set('subjects', subjects); renderSubjects(); renderHome(); }
-}
+                    <!-- Bottom Navigation -->
+                    <nav class="fixed bottom-0 left-0 right-0 bg-bg-card border-t border-white/5 px-6 pb-safe flex justify-between items-center z-50">
+                        <button onclick="navigateTo('home')" class="nav-item" id="nav-home">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            <span class="text-[10px]">الرئيسية</span>
+                        </button>
+                        <button onclick="navigateTo('subjects')" class="nav-item" id="nav-subjects">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+                            <span class="text-[10px]">المواد</span>
+                        </button>
+                        <button onclick="navigateTo('reminders')" class="nav-item" id="nav-reminders">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                            <span class="text-[10px]">التذكيرات</span>
+                        </button>
+                        <button onclick="navigateTo('habits')" class="nav-item" id="nav-habits">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                            <span class="text-[10px]">عادات</span>
+                        </button>
+                    </nav>
 
-function deleteChapter(subId, chId) {
-  const sub = subjects.find(s=>s.id===subId);
-  if (!sub) return;
-  sub.chapters = sub.chapters.filter(c=>c.id!==chId);
-  DB.set('subjects', subjects);
-  renderSubjects(); renderHome();
-}
+                    <!-- Modals Container -->
+                    <div id="modal-container" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <div id="modal-content" class="bg-bg-card w-full max-w-md rounded-[20px] p-6 shadow-2xl border border-white/10 max-h-[90vh] overflow-y-auto"></div>
+                    </div>
 
-function renderSubjects() {
-  const container = document.getElementById('subjects-list');
-  if (!subjects.length) {
-    container.innerHTML = '<div class="empty-state"><div class="es-icon">📚</div><p>لا توجد مواد بعد. أضف مادة جديدة!</p></div>';
-    return;
-  }
-  container.innerHTML = subjects.map(s => {
-    const doneCh = (s.chapters||[]).filter(c=>c.done).length;
-    const totalCh = (s.chapters||[]).length;
-    const pct = totalCh ? Math.round(doneCh/totalCh*100) : 0;
-    return `<div class="subject-card">
-      <div class="subject-header">
-        <div class="subject-color-bar" style="background:${s.color}"></div>
-        <div class="subject-info">
-          <div class="subject-name">${s.name}</div>
-          <div class="subject-meta">${totalCh} فصل · ${pct}% مكتمل</div>
-        </div>
-        <div class="subject-actions">
-          <button class="btn btn-secondary btn-icon btn-sm" onclick="openAddChapterModal('${s.id}')">📑</button>
-          <button class="btn btn-danger btn-icon btn-sm" onclick="deleteSubject('${s.id}')">🗑️</button>
-        </div>
-      </div>
-      <div class="subject-body">
-        <div class="progress-bar" style="margin-bottom:10px;">
-          <div class="progress-fill" style="width:${pct}%;background:${s.color};"></div>
-        </div>
-        ${s.notes ? `<div style="font-size:0.78rem;color:var(--text2);margin-bottom:8px;">${s.notes}</div>` : ''}
-        ${totalCh ? `<div class="chapters-list">
-          ${(s.chapters||[]).map(ch=>`
-            <div class="chapter-item ${ch.done?'done':''}">
-              <div class="ch-check" onclick="toggleChapter('${s.id}','${ch.id}')">${ch.done?'✓':''}</div>
-              <div class="ch-name">${ch.name}</div>
-              <button class="ch-del" onclick="deleteChapter('${s.id}','${ch.id}')">✕</button>
-            </div>`).join('')}
-        </div>` : `<div style="font-size:0.78rem;color:var(--text3);text-align:center;padding:8px;">لا توجد فصول. اضغط 📑 لإضافة فصل.</div>`}
-      </div>
-    </div>`;
-  }).join('');
-}
+                    <!-- Toasts Container -->
+                    <div id="toast-container" class="fixed top-4 left-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
+                </div>
+            `;
+            updateAuthUI();
+            navigateTo('home');
+        }
 
-// =====================================================
-// REMINDERS PAGE
-// =====================================================
-// Stages config per type
-const STAGES_CONFIG = {
-  exam: [
-    { label: 'بدأت المذاكرة', daysBefore: 14, color: '#8b5cf6' },
-    { label: 'مراجعة أولى', daysBefore: 7,  color: '#3b82f6' },
-    { label: 'مراجعة ثانية', daysBefore: 3,  color: '#f59e0b' },
-    { label: 'قبل يوم واحد', daysBefore: 1,  color: '#ef4444' },
-  ],
-  quiz: [
-    { label: 'بدأت المذاكرة', daysBefore: 3, color: '#8b5cf6' },
-    { label: 'مراجعة سريعة', daysBefore: 1, color: '#ef4444' },
-  ],
-  assignment: [
-    { label: 'بدأت العمل',    daysBefore: 7, color: '#3b82f6' },
-    { label: 'نصف الوقت',    daysBefore: 3, color: '#f59e0b' },
-    { label: 'آخر يوم',      daysBefore: 1, color: '#ef4444' },
-  ],
-  other: [
-    { label: 'تذكير مبكر',   daysBefore: 2, color: '#06b6d4' },
-  ],
-};
+        async function updateAuthUI() {
+            const authStatus = document.getElementById('auth-status');
+            if (!authStatus) return;
 
-function populateReminderSubjectSelect() {
-  const sel = document.getElementById('new-reminder-subject');
-  sel.innerHTML = '<option value="">— بدون مادة —</option>' +
-    subjects.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
-  // Set default datetime
-  const now = new Date();
-  now.setDate(now.getDate()+7);
-  now.setHours(9,0,0,0);
-  document.getElementById('new-reminder-date').value = now.toISOString().slice(0,16);
-  updateReminderStages();
-}
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (user) {
+                authStatus.innerHTML = `
+                    <div class="text-right hidden sm:block">
+                        <div class="text-[10px] text-text-muted">مسجل كـ</div>
+                        <div class="text-xs font-medium">${user.email}</div>
+                    </div>
+                    <button onclick="handleLogout()" class="w-8 h-8 rounded-full bg-bg-hover flex items-center justify-center text-danger">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+                    </button>
+                `;
+            } else {
+                authStatus.innerHTML = `
+                    <button onclick="openAuthModal()" class="btn-secondary text-xs px-4 py-1.5">تسجيل الدخول</button>
+                `;
+            }
+        }
 
-function updateReminderStages() {
-  const type = document.getElementById('new-reminder-type')?.value || 'exam';
-  const dateVal = document.getElementById('new-reminder-date')?.value;
-  if (!dateVal) return;
-  updateReminderStagesPreview(type, dateVal);
-}
+        // ==========================================
+        // منطق التنقل
+        // ==========================================
+        function navigateTo(page) {
+            const content = document.getElementById('content');
+            if (!content) return;
 
-function updateReminderStagesPreview(type, dateVal) {
-  const container = document.getElementById('reminder-stages-preview');
-  if (!container) return;
-  if (!type || !dateVal) { container.textContent = 'اختر النوع والتاريخ أولاً'; return; }
-  const stages = STAGES_CONFIG[type] || [];
-  const mainDate = new Date(dateVal);
-  container.innerHTML = stages.map(st => {
-    const d = new Date(mainDate);
-    d.setDate(d.getDate() - st.daysBefore);
-    return `<div style="display:flex;align-items:center;gap:6px;margin:3px 0;">
-      <div style="width:8px;height:8px;border-radius:50%;background:${st.color};flex-shrink:0;"></div>
-      <span>${st.label}</span>
-      <span style="color:var(--text3);">— ${fmtDate(d.toISOString())}</span>
-    </div>`;
-  }).join('') || '<span>لا توجد مراحل تلقائية</span>';
-}
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.getElementById(`nav-${page}`)?.classList.add('active');
 
-function addReminder() {
-  const name = document.getElementById('new-reminder-name').value.trim();
-  const type = document.getElementById('new-reminder-type').value;
-  const date = document.getElementById('new-reminder-date').value;
-  const subjectId = document.getElementById('new-reminder-subject').value;
-  if (!name || !date) { toast('أدخل الاسم والتاريخ', 'error'); return; }
+            switch(page) {
+                case 'home': renderHome(content); break;
+                case 'subjects': renderSubjects(content); break;
+                case 'reminders': renderReminders(content); break;
+                case 'habits': renderHabits(content); break;
+            }
+        }
 
-  const stages = (STAGES_CONFIG[type]||[]).map(st => {
-    const d = new Date(date);
-    d.setDate(d.getDate() - st.daysBefore);
-    return { ...st, date: d.toISOString(), done: false };
-  });
+        // ==========================================
+        // قسم الرئيسية
+        // ==========================================
+        function renderHome(container) {
+            const totalChapters = state.subjects.reduce((acc, s) => acc + s.chapters.length, 0);
+            const doneChapters = state.subjects.reduce((acc, s) => acc + s.chapters.filter(c => c.done).length, 0);
+            const progress = totalChapters > 0 ? Math.round((doneChapters / totalChapters) * 100) : 0;
 
-  reminders.push({ id: 'rem_'+Date.now(), name, type, date, subjectId, stages, createdAt: new Date().toISOString() });
-  DB.set('reminders', reminders);
-  document.getElementById('new-reminder-name').value = '';
-  closeModal('modal-add-reminder');
-  toast('تمت إضافة التذكير ✅', 'success');
-  renderAll();
-}
+            container.innerHTML = `
+                <header class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">أهلاً بك 👋</h1>
+                    <p class="text-text-muted">إليك ملخص يومك الدراسي</p>
+                </header>
 
-function deleteReminder(id) {
-  if (!confirm('هل تريد حذف هذا التذكير؟')) return;
-  reminders = reminders.filter(r=>r.id!==id);
-  DB.set('reminders', reminders);
-  renderAll();
-  toast('تم حذف التذكير', 'info');
-}
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="card bg-gradient-to-br from-primary/20 to-transparent">
+                        <span class="text-text-dim text-sm block mb-1">إنجاز المواد</span>
+                        <div class="text-2xl font-bold">${progress}%</div>
+                        <div class="w-full bg-white/10 h-1.5 rounded-full mt-2">
+                            <div class="bg-primary h-full rounded-full transition-all duration-500" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+                    <div class="card bg-gradient-to-br from-secondary/20 to-transparent">
+                        <span class="text-text-dim text-sm block mb-1">تذكيرات قادمة</span>
+                        <div class="text-2xl font-bold">${state.reminders.length}</div>
+                        <span class="text-xs text-text-muted">مهام نشطة</span>
+                    </div>
+                </div>
 
-function toggleStage(remId, stageIdx) {
-  const rem = reminders.find(r=>r.id===remId);
-  if (!rem || !rem.stages[stageIdx]) return;
-  rem.stages[stageIdx].done = !rem.stages[stageIdx].done;
-  DB.set('reminders', reminders);
-  renderReminders();
-}
+                <!-- Cloud Sync Section -->
+                <section class="mb-8">
+                    <div class="card border-primary/20 bg-primary/5">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a3.5 3.5 0 0 0 0-7h-1.5a7 7 0 1 0-11.76 6.91"/></svg>
+                                المزامنة السحابية
+                            </h3>
+                            <button onclick="syncToCloud()" class="text-primary text-xs font-bold">مزامنة الآن</button>
+                        </div>
+                        <p class="text-[10px] text-text-muted mb-4">احفظ بياناتك وإعداداتك في السحابة للوصول إليها من أي مكان.</p>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-[10px] text-text-dim block mb-1">رابط Google Apps Script</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="settings-gas-url" class="input-field text-xs py-2" value="${state.gasUrl}" placeholder="https://script.google.com/macros/s/...">
+                                    <button onclick="saveScriptUrl()" class="btn-primary text-xs px-4 py-2">حفظ</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-function renderReminders() {
-  const container = document.getElementById('reminders-list');
-  const typeIcons = { exam:'📝', quiz:'✏️', assignment:'📋', other:'📌' };
-  const typeLabels = { exam:'امتحان', quiz:'كويز', assignment:'واجب', other:'أخرى' };
-  const typeBadges = { exam:'badge-danger', quiz:'badge-warning', assignment:'badge-primary', other:'badge-secondary' };
+                <div class="flex gap-3">
+                    <button onclick="exportICS()" class="btn-secondary flex-1 flex items-center justify-center gap-2 text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                        تصدير التقويم
+                    </button>
+                    <button onclick="openSyncModal()" class="btn-secondary flex-1 flex items-center justify-center gap-2 text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+                        مزامنة جوجل
+                    </button>
+                </div>
+            `;
+        }
 
-  if (!reminders.length) {
-    container.innerHTML = '<div class="empty-state"><div class="es-icon">🔔</div><p>لا توجد تذكيرات بعد. أضف تذكيراً جديداً!</p></div>';
-    return;
-  }
+        // ==========================================
+        // أقسام المواد والتذكيرات والعادات (نفس المنطق السابق)
+        // ==========================================
+        function renderSubjects(container) {
+            container.innerHTML = `
+                <header class="flex justify-between items-center mb-6">
+                    <h1 class="text-2xl font-bold">المواد الدراسية</h1>
+                    <button onclick="openAddSubjectModal()" class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-lg shadow-primary/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    </button>
+                </header>
+                <div class="space-y-4">
+                    ${state.subjects.length > 0 ? state.subjects.map(s => {
+                        const done = s.chapters.filter(c => c.done).length;
+                        const total = s.chapters.length;
+                        const progress = total > 0 ? Math.round((done / total) * 100) : 0;
+                        return `
+                            <div class="card border-r-4" style="border-right-color: ${s.color}">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h3 class="font-bold text-lg">${s.name}</h3>
+                                    <div class="flex gap-2">
+                                        <button onclick="addChapter('${s.id}')" class="text-primary p-1"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>
+                                        <button onclick="deleteSubject('${s.id}')" class="text-danger p-1"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between text-xs text-text-muted mb-2">
+                                    <span>${done} من ${total} فصول</span>
+                                    <span>${progress}%</span>
+                                </div>
+                                <div class="w-full bg-white/5 h-1.5 rounded-full mb-4">
+                                    <div class="h-full rounded-full transition-all duration-500" style="width: ${progress}%; background-color: ${s.color}"></div>
+                                </div>
+                                <div class="space-y-2">
+                                    ${s.chapters.map(c => `
+                                        <div class="flex items-center gap-3 py-1">
+                                            <button onclick="toggleChapter('${s.id}', '${c.id}')" class="w-5 h-5 rounded border border-white/20 flex items-center justify-center transition-all ${c.done ? 'bg-success border-success' : ''}">
+                                                ${c.done ? '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="text-white"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+                                            </button>
+                                            <span class="text-sm ${c.done ? 'text-text-dim line-through' : ''}">${c.name}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }).join('') : '<div class="text-center py-12 text-text-dim">ابدأ بإضافة أول مادة دراسية</div>'}
+                </div>
+            `;
+        }
 
-  const sorted = [...reminders].sort((a,b)=>new Date(a.date)-new Date(b.date));
-  container.innerHTML = sorted.map(r => {
-    const sub = subjects.find(s=>s.id===r.subjectId);
-    const doneSt = (r.stages||[]).filter(s=>s.done).length;
-    return `<div class="reminder-card type-${r.type}">
-      <div class="reminder-header">
-        <div>
-          <div style="display:flex;align-items:center;gap:6px;">
-            <span>${typeIcons[r.type]||'📌'}</span>
-            <div class="reminder-name">${r.name}</div>
-          </div>
-          <div class="reminder-subject">${sub?sub.name:'—'}</div>
-          <div class="reminder-date">📅 ${fmtDate(r.date)}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-          <span class="badge ${typeBadges[r.type]||'badge-secondary'}">${typeLabels[r.type]}</span>
-          <button class="btn btn-danger btn-icon btn-sm" onclick="deleteReminder('${r.id}')">🗑️</button>
-        </div>
-      </div>
-      ${r.stages && r.stages.length ? `
-      <div class="reminder-stages">
-        <div style="font-size:0.75rem;color:var(--text2);margin-bottom:4px;">المراحل: ${doneSt}/${r.stages.length}</div>
-        <div class="stage-list">
-          ${r.stages.map((st,i)=>`
-            <div class="stage-item ${st.done?'si-done':''}" onclick="toggleStage('${r.id}',${i})" style="cursor:pointer;">
-              <div class="si-dot" style="background:${st.color}"></div>
-              <div class="si-label">${st.label}</div>
-              <div class="si-date">${fmtDate(st.date)}</div>
-              <span style="color:${st.done?'var(--success)':'var(--text3)'}">${st.done?'✅':'⬜'}</span>
-            </div>`).join('')}
-        </div>
-      </div>` : ''}
-    </div>`;
-  }).join('');
-}
+        function renderReminders(container) {
+            container.innerHTML = `
+                <header class="flex justify-between items-center mb-6">
+                    <h1 class="text-2xl font-bold">التذكيرات الذكية</h1>
+                    <button onclick="openAddReminderModal()" class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-lg shadow-primary/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    </button>
+                </header>
+                <div class="space-y-6">
+                    ${state.reminders.length > 0 ? state.reminders.map(r => `
+                        <div class="card relative overflow-hidden">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] uppercase font-bold bg-white/10 text-text-muted">
+                                            ${r.type === 'exam' ? 'امتحان' : r.type === 'quiz' ? 'كويز' : r.type === 'assignment' ? 'واجب' : 'آخر'}
+                                        </span>
+                                        <h3 class="font-bold text-lg">${r.name}</h3>
+                                    </div>
+                                    <p class="text-xs text-text-dim">${new Date(r.date).toLocaleDateString('ar-EG', { dateStyle: 'full' })}</p>
+                                </div>
+                                <button onclick="deleteReminder('${r.id}')" class="text-danger/50 hover:text-danger p-1"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+                            </div>
+                            <div class="relative pt-4 pb-2">
+                                <div class="absolute top-8 left-4 right-4 h-0.5 bg-white/5"></div>
+                                <div class="flex justify-between relative px-2">
+                                    ${r.stages.map(s => `
+                                        <div class="flex flex-col items-center gap-2 z-10">
+                                            <button onclick="toggleReminderStage('${r.id}', '${s.label}')" class="w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${s.done ? 'bg-success border-success' : 'bg-bg-card border-white/10'}" style="${!s.done ? `border-color: ${s.color}44` : ''}">
+                                                ${s.done ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="text-white"><polyline points="20 6 9 17 4 12"/></svg>' : `<div class="w-2 h-2 rounded-full" style="background-color: ${s.color}"></div>`}
+                                            </button>
+                                            <div class="text-[10px] text-center">
+                                                <div class="font-bold ${s.done ? 'text-text-dim' : ''}">${s.label}</div>
+                                                <div class="text-text-dim">${new Date(s.date).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })}</div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('') : '<div class="text-center py-12 text-text-dim">لا توجد تذكيرات حالية</div>'}
+                </div>
+            `;
+        }
 
-// =====================================================
-// HABITS PAGE
-// =====================================================
-let newHabitTimes = [];
+        function renderHabits(container) {
+            const today = new Date().toISOString().split('T')[0];
+            const totalChecks = state.habits.reduce((acc, h) => acc + h.times.length, 0);
+            const doneChecks = state.habits.reduce((acc, h) => acc + (state.habitLogs[today]?.[h.id]?.length || 0), 0);
+            const progress = totalChecks > 0 ? Math.round((doneChecks / totalChecks) * 100) : 0;
 
-function resetHabitForm() {
-  newHabitTimes = [];
-  document.getElementById('new-habit-name').value = '';
-  document.getElementById('new-habit-time-input').value = '';
-  renderHabitTimesInput();
-}
+            container.innerHTML = `
+                <header class="flex justify-between items-center mb-6">
+                    <h1 class="text-2xl font-bold">عادات يومية</h1>
+                    <button onclick="openAddHabitModal()" class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-lg shadow-primary/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    </button>
+                </header>
+                <div class="card bg-gradient-to-r from-success/20 to-transparent mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="font-bold">إنجاز اليوم</h2>
+                        <span class="text-success font-bold">${progress}%</span>
+                    </div>
+                    <div class="w-full bg-white/5 h-2 rounded-full">
+                        <div class="bg-success h-full rounded-full transition-all duration-700" style="width: ${progress}%"></div>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    ${state.habits.map(h => {
+                        const checks = state.habitLogs[today]?.[h.id] || [];
+                        return `
+                            <div class="card">
+                                <div class="flex justify-between items-center mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-xl">${h.name.split(' ')[0]}</div>
+                                        <div>
+                                            <h3 class="font-bold">${h.name.split(' ').slice(1).join(' ') || h.name}</h3>
+                                            <p class="text-xs text-text-dim">سلسلة: ${h.streak} أيام</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="deleteHabit('${h.id}')" class="text-danger/40 hover:text-danger"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+                                </div>
+                                <div class="flex gap-2 overflow-x-auto pb-2">
+                                    ${h.times.map((time, idx) => {
+                                        const isDone = checks.includes(idx);
+                                        return `
+                                            <button onclick="toggleHabitCheck('${h.id}', ${idx})" class="flex-shrink-0 px-4 py-2 rounded-xl border transition-all flex flex-col items-center gap-1 ${isDone ? 'bg-success border-success text-white' : 'bg-white/5 border-white/5 text-text-muted'}">
+                                                <span class="text-xs font-bold">${time}</span>
+                                                ${isDone ? '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>'}
+                                            </button>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
 
-function addHabitTimeInput() {
-  const val = document.getElementById('new-habit-time-input').value;
-  if (!val) { toast('اختر وقتاً', 'error'); return; }
-  if (newHabitTimes.includes(val)) { toast('هذا الوقت موجود مسبقاً', 'error'); return; }
-  newHabitTimes.push(val);
-  newHabitTimes.sort();
-  document.getElementById('new-habit-time-input').value = '';
-  renderHabitTimesInput();
-}
+        // ==========================================
+        // منطق المصادقة (Supabase Auth)
+        // ==========================================
+        function openAuthModal(mode = 'login') {
+            openModal(`
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold mb-2">${mode === 'login' ? 'تسجيل الدخول' : 'إنشاء حساب جديد'}</h2>
+                    <p class="text-text-muted text-sm">قم بمزامنة بياناتك عبر السحابة</p>
+                </div>
+                <form onsubmit="handleAuth(event, '${mode}')" class="space-y-4">
+                    <div>
+                        <label class="text-xs text-text-dim block mb-1">البريد الإلكتروني</label>
+                        <input type="email" id="auth-email" class="input-field" required placeholder="example@mail.com">
+                    </div>
+                    <div>
+                        <label class="text-xs text-text-dim block mb-1">كلمة المرور</label>
+                        <input type="password" id="auth-password" class="input-field" required placeholder="••••••••">
+                    </div>
+                    <button type="submit" id="auth-submit-btn" class="btn-primary w-full">
+                        ${mode === 'login' ? 'دخول' : 'تسجيل'}
+                    </button>
+                    <div class="text-center mt-4">
+                        <button type="button" onclick="openAuthModal('${mode === 'login' ? 'signup' : 'login'}')" class="text-primary text-xs font-bold underline">
+                            ${mode === 'login' ? 'ليس لديك حساب؟ سجل الآن' : 'لديك حساب بالفعل؟ ادخل'}
+                        </button>
+                    </div>
+                </form>
+            `);
+        }
 
-function renderHabitTimesInput() {
-  const list = document.getElementById('habit-times-list');
-  if (!newHabitTimes.length) { list.innerHTML = '<div style="font-size:0.78rem;color:var(--text3);">لا توجد أوقات مضافة</div>'; return; }
-  list.innerHTML = newHabitTimes.map((t,i)=>`
-    <div style="display:flex;align-items:center;gap:8px;background:var(--bg3);border-radius:var(--radius-sm);padding:6px 10px;">
-      <span style="flex:1;font-size:0.85rem;font-weight:700;color:var(--primary-light);">🕐 ${t}</span>
-      <button class="btn btn-danger btn-icon btn-sm" onclick="removeHabitTimeInput(${i})">✕</button>
-    </div>`).join('');
-}
+        async function handleAuth(e, mode) {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            const btn = document.getElementById('auth-submit-btn');
 
-function removeHabitTimeInput(i) {
-  newHabitTimes.splice(i,1);
-  renderHabitTimesInput();
-}
+            btn.disabled = true;
+            btn.innerText = 'جاري العمل...';
 
-function saveNewHabit() {
-  const name = document.getElementById('new-habit-name').value.trim();
-  if (!name) { toast('أدخل اسم العادة', 'error'); return; }
-  if (!newHabitTimes.length) { toast('أضف وقتاً واحداً على الأقل', 'error'); return; }
-  habits.push({ id:'habit_'+Date.now(), name, times:[...newHabitTimes], createdAt:new Date().toISOString(), streak:0 });
-  DB.set('habits', habits);
-  closeModal('modal-add-habit');
-  toast('تمت إضافة العادة ✅', 'success');
-  renderAll();
-}
+            try {
+                let result;
+                if (mode === 'login') {
+                    result = await supabaseClient.auth.signInWithPassword({ email, password });
+                } else {
+                    result = await supabaseClient.auth.signUp({ email, password });
+                }
 
-function deleteHabit(id) {
-  if (!confirm('هل تريد حذف هذه العادة؟')) return;
-  habits = habits.filter(h=>h.id!==id);
-  DB.set('habits', habits);
-  renderAll();
-  toast('تم حذف العادة', 'info');
-}
+                if (result.error) throw result.error;
 
-function toggleHabitCheck(habitId, timeIdx) {
-  const today = todayStr();
-  if (!habitLogs[today]) habitLogs[today] = {};
-  if (!habitLogs[today][habitId]) habitLogs[today][habitId] = [];
-  const log = habitLogs[today][habitId];
-  const pos = log.indexOf(timeIdx);
-  if (pos === -1) log.push(timeIdx);
-  else log.splice(pos,1);
-  DB.set('habitLogs', habitLogs);
-  renderHabits();
-  renderHome();
-}
+                showToast(mode === 'login' ? 'تم الدخول بنجاح' : 'تم إنشاء الحساب بنجاح', 'success');
+                closeModal();
+                await loadFromCloud();
+                updateAuthUI();
+            } catch (err) {
+                showToast(err.message, 'danger');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = mode === 'login' ? 'دخول' : 'تسجيل';
+            }
+        }
 
-function renderHabits() {
-  const container = document.getElementById('habits-list');
-  const today = todayStr();
+        async function handleLogout() {
+            if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+                await supabaseClient.auth.signOut();
+                showToast('تم تسجيل الخروج', 'info');
+                updateAuthUI();
+                renderApp();
+            }
+        }
 
-  // Update banner
-  let totalChecks=0, doneChecks=0;
-  habits.forEach(h=>{
-    totalChecks += h.times.length;
-    doneChecks += (habitLogs[today]?.[h.id]||[]).length;
-  });
-  document.getElementById('habit-today-count').textContent = `${doneChecks}/${totalChecks}`;
-  const pct = totalChecks ? Math.round(doneChecks/totalChecks*100) : 0;
-  document.getElementById('habit-today-progress-text').textContent =
-    pct === 100 ? '🎉 ممتاز! أكملت كل عاداتك اليوم!' :
-    pct >= 50  ? `أكملت ${pct}% من عاداتك، استمر!` :
-                 `باقي ${totalChecks-doneChecks} تذكير`;
+        // ==========================================
+        // منطق النوافذ المنبثقة والتوست
+        // ==========================================
+        function openModal(html) {
+            const modal = document.getElementById('modal-container');
+            const content = document.getElementById('modal-content');
+            if (!modal || !content) return;
+            content.innerHTML = html;
+            modal.classList.remove('hidden');
+        }
 
-  if (!habits.length) {
-    container.innerHTML = '<div class="empty-state"><div class="es-icon">🦷</div><p>لا توجد عادات بعد. أضف عادة جديدة!</p></div>';
-    return;
-  }
+        function closeModal() {
+            document.getElementById('modal-container')?.classList.add('hidden');
+        }
 
-  container.innerHTML = habits.map(h => {
-    const log = habitLogs[today]?.[h.id]||[];
-    const allDone = log.length >= h.times.length;
-    return `<div class="habit-card" style="${allDone?'border-color:rgba(16,185,129,0.3);':''}">
-      <div class="habit-header">
-        <div class="habit-info">
-          <div class="habit-name">${h.name}</div>
-          <div class="habit-times">
-            ${h.times.map(t=>`<span class="habit-time-chip">🕐 ${t}</span>`).join('')}
-          </div>
-        </div>
-        <div class="habit-actions">
-          ${allDone ? '<span style="font-size:1.4rem;">✅</span>' : ''}
-          <button class="btn btn-danger btn-icon btn-sm" onclick="deleteHabit('${h.id}')">🗑️</button>
-        </div>
-      </div>
-      <div class="habit-check-row">
-        ${h.times.map((t,i)=>{
-          const done = log.includes(i);
-          return `<button class="habit-check-btn ${done?'done':''}" onclick="toggleHabitCheck('${h.id}',${i})">
-            <span class="hcb-time">${t}</span>
-            <span class="hcb-status">${done?'✓ تم':'اضغط للتأكيد'}</span>
-          </button>`;
-        }).join('')}
-      </div>
-    </div>`;
-  }).join('');
-}
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
 
-// =====================================================
-// ICS EXPORT
-// =====================================================
-function exportICS() {
-  const lines = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//مذاكرتي//AR',
-    'CALSCALE:GREGORIAN',
-    'METHOD:PUBLISH',
-    'X-WR-CALNAME:مذاكرتي - تذكيرات + عادات',
-    'X-WR-TIMEZONE:Asia/Amman',
-  ];
+            const toast = document.createElement('div');
+            toast.className = `p-3 rounded-lg text-white text-xs font-bold shadow-lg transition-all transform translate-y-4 opacity-0 flex items-center gap-2 pointer-events-auto`;
+            
+            const colors = {
+                success: 'bg-success',
+                danger: 'bg-danger',
+                warning: 'bg-warning',
+                info: 'bg-primary'
+            };
+            toast.classList.add(colors[type] || colors.info);
+            
+            toast.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12" y1="8" y2="8"/></svg>
+                ${message}
+            `;
 
-  // ---- Study Reminders ----
-  reminders.forEach(r => {
-    const sub = subjects.find(s=>s.id===r.subjectId);
-    const dtStart = toICSDate(r.date);
-    const typeLabels = { exam:'امتحان', quiz:'كويز', assignment:'واجب', other:'أخرى' };
-    // Main event
-    lines.push(
-      'BEGIN:VEVENT',
-      `UID:${r.id}@mthakrti`,
-      `DTSTAMP:${toICSDate(new Date().toISOString())}`,
-      `DTSTART:${dtStart}`,
-      `DTEND:${toICSDateEnd(r.date, 60)}`,
-      `SUMMARY:${typeLabels[r.type]||''} - ${r.name}${sub?' ('+sub.name+')':''}`,
-      `DESCRIPTION:${r.name}${sub?'\\nالمادة: '+sub.name:''}`,
-      'BEGIN:VALARM',
-      'TRIGGER:-PT60M',
-      'ACTION:DISPLAY',
-      `DESCRIPTION:تذكير: ${r.name}`,
-      'END:VALARM',
-      'END:VEVENT',
-    );
-    // Stage events
-    (r.stages||[]).forEach((st,i)=>{
-      lines.push(
-        'BEGIN:VEVENT',
-        `UID:${r.id}_stage${i}@mthakrti`,
-        `DTSTAMP:${toICSDate(new Date().toISOString())}`,
-        `DTSTART:${toICSDateAllDay(st.date)}`,
-        `DTEND:${toICSDateAllDay(st.date, 1)}`,
-        `SUMMARY:📌 ${st.label} - ${r.name}`,
-        `DESCRIPTION:${r.name}\\nالمرحلة: ${st.label}`,
-        'BEGIN:VALARM',
-        'TRIGGER:PT0S',
-        'ACTION:DISPLAY',
-        `DESCRIPTION:${st.label}: ${r.name}`,
-        'END:VALARM',
-        'END:VEVENT',
-      );
-    });
-  });
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            }, 10);
 
-  // ---- Daily Habits (RRULE:FREQ=DAILY) ----
-  habits.forEach(h => {
-    h.times.forEach((t, ti) => {
-      const [hh, mm] = t.split(':').map(Number);
-      const today = new Date();
-      today.setHours(hh, mm, 0, 0);
-      lines.push(
-        'BEGIN:VEVENT',
-        `UID:habit_${h.id}_${ti}@mthakrti`,
-        `DTSTAMP:${toICSDate(new Date().toISOString())}`,
-        `DTSTART:${toICSDateWithTime(today)}`,
-        `DTEND:${toICSDateWithTimeEnd(today, 15)}`,
-        `RRULE:FREQ=DAILY`,
-        `SUMMARY:🦷 ${h.name}`,
-        `DESCRIPTION:عادة يومية: ${h.name}\\nالوقت: ${t}`,
-        'BEGIN:VALARM',
-        'TRIGGER:-PT5M',
-        'ACTION:DISPLAY',
-        `DESCRIPTION:حان وقت: ${h.name}`,
-        'END:VALARM',
-        'END:VEVENT',
-      );
-    });
-  });
+            setTimeout(() => {
+                toast.classList.add('translate-y-4', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
 
-  lines.push('END:VCALENDAR');
+        // ==========================================
+        // مزامنة Google Calendar عبر GAS
+        // ==========================================
+        async function openSyncModal() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) return openAuthModal();
 
-  const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'مذاكرتي.ics'; a.click();
-  URL.revokeObjectURL(url);
-  toast('تم تنزيل ملف ICS ✅', 'success');
-}
+            openModal(`
+                <h2 class="text-xl font-bold mb-4">مزامنة تقويم جوجل</h2>
+                <div class="space-y-4">
+                    <p class="text-xs text-text-muted">سيتم إرسال مهامك وعاداتك إلى تقويم جوجل الخاص بك.</p>
+                    <div class="flex gap-4">
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" id="sync-reminders" checked> تذكيرات
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" id="sync-habits" checked> عادات
+                        </label>
+                    </div>
+                    <div id="sync-status" class="hidden">
+                        <div class="w-full bg-white/5 h-1 rounded-full mb-2">
+                            <div id="sync-progress" class="bg-primary h-full rounded-full transition-all" style="width: 0%"></div>
+                        </div>
+                        <div id="sync-log" class="text-[10px] text-text-dim h-20 overflow-y-auto bg-black/20 p-2 rounded"></div>
+                    </div>
+                    <button onclick="startSync()" id="sync-btn" class="btn-primary w-full mt-4">بدء المزامنة</button>
+                </div>
+            `);
+        }
 
-// ICS Date Helpers
-function toICSDate(iso) {
-  return iso.replace(/[-:]/g,'').replace(/\.\d+/,'').replace('T','T').slice(0,15)+'Z';
-}
-function toICSDateEnd(iso, addMinutes) {
-  const d = new Date(iso);
-  d.setMinutes(d.getMinutes()+addMinutes);
-  return d.toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'').slice(0,15)+'Z';
-}
-function toICSDateAllDay(iso) {
-  return 'DATE:' + iso.slice(0,10).replace(/-/g,'');
-}
-function toICSDateAllDay(iso, addDays=0) {
-  const d = new Date(iso);
-  d.setDate(d.getDate()+addDays);
-  return d.toISOString().slice(0,10).replace(/-/g,'');
-}
-function toICSDateWithTime(dateObj) {
-  // Format as local time YYYYMMDDTHHMMSS (no Z, use TZID)
-  const y = dateObj.getFullYear();
-  const mo = String(dateObj.getMonth()+1).padStart(2,'0');
-  const d = String(dateObj.getDate()).padStart(2,'0');
-  const h = String(dateObj.getHours()).padStart(2,'0');
-  const m = String(dateObj.getMinutes()).padStart(2,'0');
-  return `TZID=Asia/Amman:${y}${mo}${d}T${h}${m}00`;
-}
-function toICSDateWithTimeEnd(dateObj, addMin) {
-  const d2 = new Date(dateObj.getTime() + addMin*60000);
-  const y = d2.getFullYear();
-  const mo = String(d2.getMonth()+1).padStart(2,'0');
-  const d = String(d2.getDate()).padStart(2,'0');
-  const h = String(d2.getHours()).padStart(2,'0');
-  const m = String(d2.getMinutes()).padStart(2,'0');
-  return `TZID=Asia/Amman:${y}${mo}${d}T${h}${m}00`;
-}
+        async function startSync() {
+            const syncRem = document.getElementById('sync-reminders').checked;
+            const syncHab = document.getElementById('sync-habits').checked;
 
-// =====================================================
-// GAS SYNC — Google Apps Script Integration
-// =====================================================
+            if (!state.gasUrl) return showToast('يرجى حفظ رابط GAS أولاً في الإعدادات', 'warning');
 
-// ---- Config ----
-// ⚠️ الرابط يُحفظ في localStorage، لا يُكتب مباشرة في الكود
-// لإضافة Secret Token: أضفه في GAS script أولاً، ثم أدخله في واجهة المزامنة
+            const btn = document.getElementById('sync-btn');
+            const status = document.getElementById('sync-status');
+            const progress = document.getElementById('sync-progress');
+            const log = document.getElementById('sync-log');
 
-function openSyncModal() {
-  // استرجاع الإعدادات المحفوظة
-  const savedUrl    = DB.get('gasUrl', '');
-  const savedSecret = DB.get('gasSecret', '');
-  document.getElementById('gas-url-input').value    = savedUrl;
-  document.getElementById('gas-secret-input').value = savedSecret;
-  resetSyncModal();
-  openModal('modal-sync');
-}
+            btn.disabled = true;
+            btn.innerText = 'جاري المزامنة...';
+            status.classList.remove('hidden');
+            log.innerHTML = '';
 
-function resetSyncModal() {
-  document.getElementById('sync-settings').style.display = 'block';
-  document.getElementById('sync-progress').style.display = 'none';
-  document.getElementById('sync-result').style.display   = 'none';
-  document.getElementById('start-sync-btn').disabled = false;
-  document.getElementById('sync-log').innerHTML = '';
-}
+            const tasks = [];
+            if (syncRem) {
+                state.reminders.forEach(r => {
+                    r.stages.forEach(s => {
+                        if (!s.done) {
+                            tasks.push({
+                                title: `${r.name} - ${s.label}`,
+                                startTime: new Date(s.date).toISOString(),
+                                durationMinutes: 30,
+                                description: 'مذاكرتي - تذكير ذكي',
+                                reminderMinutes: 30
+                            });
+                        }
+                    });
+                });
+            }
+            if (syncHab) {
+                state.habits.forEach(h => {
+                    h.times.forEach(t => {
+                        const [hh, mm] = t.split(':');
+                        const d = new Date();
+                        d.setHours(parseInt(hh), parseInt(mm), 0);
+                        for (let i = 0; i < 7; i++) {
+                            const sd = new Date(d);
+                            sd.setDate(sd.getDate() + i);
+                            tasks.push({
+                                title: h.name,
+                                startTime: sd.toISOString(),
+                                durationMinutes: 15,
+                                description: 'مذاكرتي - عادة يومية',
+                                reminderMinutes: 10
+                            });
+                        }
+                    });
+                });
+            }
 
-// ---- بناء قائمة الأحداث للإرسال ----
-function buildEventsToSync() {
-  const events = [];
-  const syncReminders = document.getElementById('sync-reminders-check').checked;
-  const syncHabits    = document.getElementById('sync-habits-check').checked;
-  const typeLabels    = { exam:'📝 امتحان', quiz:'✏️ كويز', assignment:'📋 واجب', other:'📌 أخرى' };
+            if (tasks.length === 0) {
+                btn.innerText = 'لا يوجد مهام للمزامنة';
+                btn.disabled = false;
+                return;
+            }
 
-  // ---- التذكيرات الدراسية ----
-  if (syncReminders) {
-    reminders.forEach(r => {
-      const sub = subjects.find(s => s.id === r.subjectId);
-      const subName = sub ? ` (${sub.name})` : '';
+            for (let i = 0; i < tasks.length; i++) {
+                try {
+                    await fetch(state.gasUrl, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        body: JSON.stringify(tasks[i])
+                    });
+                    log.innerHTML += `<div>✅ تم إرسال: ${tasks[i].title}</div>`;
+                } catch (e) {
+                    log.innerHTML += `<div class="text-danger">❌ خطأ في: ${tasks[i].title}</div>`;
+                }
+                progress.style.width = `${((i + 1) / tasks.length) * 100}%`;
+                log.scrollTop = log.scrollHeight;
+            }
 
-      // الحدث الرئيسي
-      events.push({
-        title:           `${typeLabels[r.type] || '📌'} - ${r.name}${subName}`,
-        startTime:       r.date,
-        durationMinutes: 60,
-        description:     `${r.name}${sub ? '\nالمادة: ' + sub.name : ''}\nتمت الإضافة بواسطة مذاكرتي`,
-        reminderMinutes: 10,
-        _label:          `${r.name} (رئيسي)`,
-      });
+            btn.innerText = 'تمت المزامنة بنجاح!';
+            setTimeout(() => closeModal(), 2000);
+        }
 
-      // مراحل التذكير
-      (r.stages || []).forEach(st => {
-        // نضع المرحلة في بداية اليوم الساعة 9 صباحاً
-        const stDate = new Date(st.date);
-        stDate.setHours(9, 0, 0, 0);
-        events.push({
-          title:           `📌 ${st.label} - ${r.name}${subName}`,
-          startTime:       stDate.toISOString(),
-          durationMinutes: 30,
-          description:     `مرحلة تذكير: ${st.label}\n${r.name}`,
-          reminderMinutes: 10,
-          _label:          `${r.name} — ${st.label}`,
+        // ==========================================
+        // وظائف مساعدة (المواد، التذكيرات، العادات)
+        // ==========================================
+        function openAddSubjectModal() {
+            openModal(`
+                <h2 class="text-xl font-bold mb-4">إضافة مادة جديدة</h2>
+                <div class="space-y-4">
+                    <input type="text" id="subj-name" class="input-field" placeholder="اسم المادة">
+                    <div class="flex flex-wrap gap-2">
+                        ${COLORS.map(c => `<button onclick="selectColor(this, '${c}')" class="w-8 h-8 rounded-full border-2 border-transparent transition-all" style="background-color: ${c}"></button>`).join('')}
+                    </div>
+                    <input type="hidden" id="subj-color" value="${COLORS[0]}">
+                    <button onclick="saveSubject()" class="btn-primary w-full mt-4">حفظ المادة</button>
+                </div>
+            `);
+        }
+
+        function selectColor(el, color) {
+            document.querySelectorAll('[onclick*="selectColor"]').forEach(b => b.classList.remove('border-white', 'scale-110'));
+            el.classList.add('border-white', 'scale-110');
+            document.getElementById('subj-color').value = color;
+        }
+
+        function saveSubject() {
+            const name = document.getElementById('subj-name').value;
+            const color = document.getElementById('subj-color').value;
+            if (!name) return;
+            state.subjects.push({ id: crypto.randomUUID(), name, color, chapters: [] });
+            state.save();
+            closeModal();
+            navigateTo('subjects');
+        }
+
+        function addChapter(subjId) {
+            const name = prompt('اسم الفصل:');
+            if (!name) return;
+            const subj = state.subjects.find(s => s.id === subjId);
+            if (subj) {
+                subj.chapters.push({ id: crypto.randomUUID(), name, done: false });
+                state.save();
+                navigateTo('subjects');
+            }
+        }
+
+        function toggleChapter(subjId, chapId) {
+            const subj = state.subjects.find(s => s.id === subjId);
+            if (subj) {
+                const chap = subj.chapters.find(c => c.id === chapId);
+                if (chap) {
+                    chap.done = !chap.done;
+                    state.save();
+                    navigateTo('subjects');
+                }
+            }
+        }
+
+        function deleteSubject(id) {
+            if (confirm('حذف المادة؟')) {
+                state.subjects = state.subjects.filter(s => s.id !== id);
+                state.save();
+                navigateTo('subjects');
+            }
+        }
+
+        function openAddReminderModal() {
+            openModal(`
+                <h2 class="text-xl font-bold mb-4">إضافة تذكير ذكي</h2>
+                <div class="space-y-4">
+                    <input type="text" id="rem-name" class="input-field" placeholder="اسم المهمة">
+                    <select id="rem-type" class="input-field">
+                        <option value="exam">امتحان (4 مراحل)</option>
+                        <option value="quiz">كويز (مرحلتان)</option>
+                        <option value="assignment">واجب (3 مراحل)</option>
+                        <option value="other">آخر (مرحلة واحدة)</option>
+                    </select>
+                    <input type="date" id="rem-date" class="input-field">
+                    <button onclick="saveReminder()" class="btn-primary w-full mt-4">إنشاء التذكير</button>
+                </div>
+            `);
+        }
+
+        function saveReminder() {
+            const name = document.getElementById('rem-name').value;
+            const type = document.getElementById('rem-type').value;
+            const dateStr = document.getElementById('rem-date').value;
+            if (!name || !dateStr) return;
+
+            const baseDate = new Date(dateStr);
+            const stages = [];
+            const addStage = (label, daysBefore, color) => {
+                const d = new Date(baseDate);
+                d.setDate(d.getDate() - daysBefore);
+                stages.push({ label, daysBefore, color, date: d.toISOString().split('T')[0], done: false });
+            };
+
+            if (type === 'exam') {
+                addStage('تخطيط', 14, '#8b5cf6'); addStage('مراجعة 1', 7, '#06b6d4'); addStage('مراجعة 2', 3, '#f59e0b'); addStage('ليلة الامتحان', 1, '#ef4444');
+            } else if (type === 'quiz') {
+                addStage('دراسة', 3, '#06b6d4'); addStage('مراجعة', 1, '#ef4444');
+            } else if (type === 'assignment') {
+                addStage('بدء', 7, '#8b5cf6'); addStage('تكملة', 3, '#f59e0b'); addStage('تسليم', 1, '#10b981');
+            } else {
+                addStage('تذكير', 2, '#4f46e5');
+            }
+
+            state.reminders.push({ id: crypto.randomUUID(), name, type, date: dateStr, stages });
+            state.save();
+            closeModal();
+            navigateTo('reminders');
+        }
+
+        function toggleReminderStage(remId, stageLabel) {
+            const rem = state.reminders.find(r => r.id === remId);
+            if (rem) {
+                const stage = rem.stages.find(s => s.label === stageLabel);
+                if (stage) {
+                    stage.done = !stage.done;
+                    state.save();
+                    navigateTo('reminders');
+                }
+            }
+        }
+
+        function deleteReminder(id) {
+            if (confirm('حذف التذكير؟')) {
+                state.reminders = state.reminders.filter(r => r.id !== id);
+                state.save();
+                navigateTo('reminders');
+            }
+        }
+
+        function openAddHabitModal() {
+            openModal(`
+                <h2 class="text-xl font-bold mb-4">إضافة عادة جديدة</h2>
+                <div class="space-y-4">
+                    <input type="text" id="habit-name" class="input-field" placeholder="💧 شرب الماء">
+                    <div id="habit-times-container" class="space-y-2">
+                        <input type="time" class="habit-time-input input-field">
+                    </div>
+                    <button onclick="addTimeInput()" class="text-primary text-xs font-bold">+ إضافة وقت آخر</button>
+                    <button onclick="saveHabit()" class="btn-primary w-full mt-4">حفظ العادة</button>
+                </div>
+            `);
+        }
+
+        function addTimeInput() {
+            const container = document.getElementById('habit-times-container');
+            const input = document.createElement('input');
+            input.type = 'time';
+            input.className = 'habit-time-input input-field mt-2';
+            container.appendChild(input);
+        }
+
+        function saveHabit() {
+            const name = document.getElementById('habit-name').value;
+            const times = Array.from(document.querySelectorAll('.habit-time-input')).map(i => i.value).filter(v => v);
+            if (!name || times.length === 0) return;
+            state.habits.push({ id: crypto.randomUUID(), name, times, createdAt: Date.now(), streak: 0 });
+            state.save();
+            closeModal();
+            navigateTo('habits');
+        }
+
+        function toggleHabitCheck(habitId, timeIdx) {
+            const today = new Date().toISOString().split('T')[0];
+            if (!state.habitLogs[today]) state.habitLogs[today] = {};
+            if (!state.habitLogs[today][habitId]) state.habitLogs[today][habitId] = [];
+            const idx = state.habitLogs[today][habitId].indexOf(timeIdx);
+            if (idx > -1) state.habitLogs[today][habitId].splice(idx, 1);
+            else state.habitLogs[today][habitId].push(timeIdx);
+            state.save();
+            navigateTo('habits');
+        }
+
+        function deleteHabit(id) {
+            if (confirm('حذف العادة؟')) {
+                state.habits = state.habits.filter(h => h.id !== id);
+                state.save();
+                navigateTo('habits');
+            }
+        }
+
+        function exportICS() {
+            let ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//MyStudyApp//NONSGML v1.0//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH'];
+            state.reminders.forEach(r => r.stages.forEach(s => {
+                const date = s.date.replace(/-/g, '');
+                ics.push('BEGIN:VEVENT', `SUMMARY:${r.name} - ${s.label}`, `DTSTART;VALUE=DATE:${date}`, `DTEND;VALUE=DATE:${date}`, 'DESCRIPTION:مذاكرتي - تذكير ذكي', 'END:VEVENT');
+            }));
+            state.habits.forEach(h => h.times.forEach(t => {
+                const [hh, mm] = t.split(':');
+                const now = new Date();
+                const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(hh), parseInt(mm));
+                const stamp = start.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                ics.push('BEGIN:VEVENT', `SUMMARY:${h.name}`, `DTSTART:${stamp}`, `DTEND:${stamp}`, 'RRULE:FREQ=DAILY', 'DESCRIPTION:مذاكرتي - عادة يومية', 'END:VEVENT');
+            }));
+            ics.push('END:VCALENDAR');
+            const blob = new Blob([ics.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'mthakrti_calendar.ics'; a.click();
+        }
+
+        // ==========================================
+        // التنبيهات والبدء
+        // ==========================================
+        function setupNotifications() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                setTimeout(() => Notification.requestPermission(), 2000);
+            }
+            setInterval(() => {
+                const now = new Date();
+                const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                const today = now.toISOString().split('T')[0];
+                state.habits.forEach(h => h.times.forEach((time, idx) => {
+                    if (time === currentTime && !(state.habitLogs[today]?.[h.id]?.includes(idx))) {
+                        new Notification('تذكير عادة: ' + h.name, { body: 'حان وقت ' + h.name + ' الآن!', icon: '/favicon.ico' });
+                    }
+                }));
+            }, 60000);
+        }
+
+        // مراقبة حالة المصادقة
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN') {
+                loadFromCloud();
+            } else if (event === 'SIGNED_OUT') {
+                state.loadLocal();
+                renderApp();
+            }
+            updateAuthUI();
         });
-      });
-    });
-  }
 
-  // ---- العادات اليومية ----
-  // GAS لا يدعم RRULE مباشرة، لذا نرسل الأسبوع القادم (7 أيام) لكل عادة
-  if (syncHabits) {
-    const today = new Date();
-    habits.forEach(h => {
-      h.times.forEach(t => {
-        const [hh, mm] = t.split(':').map(Number);
-        for (let day = 0; day < 7; day++) {
-          const d = new Date(today);
-          d.setDate(d.getDate() + day);
-          d.setHours(hh, mm, 0, 0);
-          events.push({
-            title:           `🦷 ${h.name}`,
-            startTime:       d.toISOString(),
-            durationMinutes: 15,
-            description:     `عادة يومية: ${h.name}\nالوقت: ${t}`,
-            reminderMinutes: 5,
-            _label:          `${h.name} @ ${t} (يوم ${day + 1}/7)`,
-          });
-        }
-      });
-    });
-  }
-
-  return events;
-}
-
-// ---- إرسال حدث واحد لـ GAS ----
-async function sendEventToGAS(gasUrl, secret, eventData) {
-  const payload = {
-    title:           eventData.title,
-    startTime:       eventData.startTime,
-    durationMinutes: eventData.durationMinutes,
-    description:     eventData.description,
-    reminderMinutes: eventData.reminderMinutes,
-  };
-  // أضف الـ secret فقط إذا كان موجوداً
-  if (secret) payload.secret = secret;
-
-  const res = await fetch(gasUrl, {
-    method:  'POST',
-    // GAS يحتاج text/plain لتجاوز CORS preflight
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body:    JSON.stringify(payload),
-  });
-
-  const json = await res.json();
-  if (json.result !== 'success') throw new Error(json.error || 'GAS returned error');
-  return json;
-}
-
-// ---- الدالة الرئيسية للمزامنة ----
-async function startGasSync() {
-  const gasUrl = document.getElementById('gas-url-input').value.trim();
-  const secret = document.getElementById('gas-secret-input').value.trim();
-
-  // التحقق من الرابط
-  if (!gasUrl || !gasUrl.includes('script.google.com')) {
-    toast('أدخل رابط GAS صحيح', 'error');
-    return;
-  }
-
-  // حفظ الإعدادات
-  DB.set('gasUrl',    gasUrl);
-  DB.set('gasSecret', secret);
-
-  // بناء قائمة الأحداث
-  const events = buildEventsToSync();
-  if (!events.length) {
-    toast('لا يوجد بيانات للمزامنة', 'error');
-    return;
-  }
-
-  // إظهار شاشة التقدم
-  document.getElementById('sync-settings').style.display  = 'none';
-  document.getElementById('sync-progress').style.display  = 'block';
-  document.getElementById('sync-result').style.display    = 'none';
-  document.getElementById('start-sync-btn').disabled      = true;
-
-  const logEl      = document.getElementById('sync-log');
-  const barEl      = document.getElementById('sync-progress-bar');
-  const titleEl    = document.getElementById('sync-progress-title');
-  const subEl      = document.getElementById('sync-progress-sub');
-
-  let successCount = 0;
-  let failCount    = 0;
-
-  function addLog(msg, ok = true) {
-    const line = document.createElement('div');
-    line.style.color = ok ? '#86efac' : '#fca5a5';
-    line.textContent = msg;
-    logEl.appendChild(line);
-    logEl.scrollTop = logEl.scrollHeight;
-  }
-
-  addLog(`▶ بدأت المزامنة — ${events.length} حدث`, true);
-
-  // إرسال الأحداث بشكل تسلسلي مع تأخير بسيط لتجنب Rate Limit
-  for (let i = 0; i < events.length; i++) {
-    const ev = events[i];
-    titleEl.textContent = `جاري الإرسال... (${i + 1}/${events.length})`;
-    subEl.textContent   = ev._label;
-    barEl.style.width   = `${Math.round(((i + 1) / events.length) * 100)}%`;
-
-    try {
-      await sendEventToGAS(gasUrl, secret, ev);
-      successCount++;
-      addLog(`✓ ${ev._label}`, true);
-    } catch (err) {
-      failCount++;
-      addLog(`✗ ${ev._label} — ${err.message}`, false);
-    }
-
-    // تأخير 300ms بين الطلبات لتجنب إغراق GAS
-    if (i < events.length - 1) await sleep(300);
-  }
-
-  // إظهار النتيجة
-  document.getElementById('sync-progress').style.display = 'none';
-  document.getElementById('sync-result').style.display   = 'block';
-
-  const allOk = failCount === 0;
-  document.getElementById('sync-result-icon').textContent  = allOk ? '🎉' : failCount === events.length ? '❌' : '⚠️';
-  document.getElementById('sync-result-title').textContent =
-    allOk             ? 'تمت المزامنة بنجاح!' :
-    failCount === events.length ? 'فشلت المزامنة' :
-                                  'اكتملت مع بعض الأخطاء';
-  document.getElementById('sync-result-sub').textContent  =
-    `✅ ${successCount} نجح  ·  ❌ ${failCount} فشل  ·  المجموع: ${events.length}`;
-
-  if (allOk) toast(`تمت مزامنة ${successCount} حدث ✅`, 'success');
-  else       toast(`${failCount} حدث فشل في الإرسال`, 'error');
-}
-
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-
-function fmtDate(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  return d.toLocaleDateString('ar-JO', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
-}
-
-// =====================================================
-// INIT
-// =====================================================
-window.addEventListener('DOMContentLoaded', init);
-
-// Ask notification permission on first load
-window.addEventListener('DOMContentLoaded', () => {
-  if ('Notification' in window && Notification.permission === 'default') {
-    setTimeout(() => {
-      Notification.requestPermission().then(p => {
-        if (p === 'granted') { toast('تم تفعيل الإشعارات ✅', 'success'); scheduleHabitNotifications(); }
-        document.getElementById('notif-banner').style.display = p === 'default' ? 'flex' : 'none';
-      });
-    }, 2000);
-  }
-});
-</script>
+        // البدء
+        renderApp();
+        setupNotifications();
+        loadFromCloud();
+    </script>
 </body>
 </html>
