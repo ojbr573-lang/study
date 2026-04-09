@@ -2,13 +2,20 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>مذاكرتي - MyStudyApp</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         :root {
             --primary: #4f46e5;
             --primary-light: #818cf8;
@@ -28,167 +35,611 @@
             --font: 'Cairo', sans-serif;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { font-family: var(--font); background-color: var(--bg); color: var(--text); direction: rtl; max-width: 520px; margin: 0 auto; min-height: 100vh; }
+        body {
+            font-family: var(--font);
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            direction: rtl;
+            max-width: 520px;
+            margin: 0 auto;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* General */
         .container { padding: 16px; padding-bottom: 84px; }
-        .card { background: var(--bg2); border-radius: var(--radius); padding: 16px; border: 1px solid var(--bg3); margin-bottom: 16px; }
+        .card { background: var(--bg2); border-radius: var(--radius); padding: 16px; border: 1px solid var(--bg3); margin-bottom: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .section-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
         .btn { cursor: pointer; border: none; font-family: var(--font); display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; font-size: 0.95rem; }
+        .btn:active { transform: scale(0.96); }
         .btn-primary { background: var(--primary); color: white; border-radius: var(--radius-sm); padding: 10px 18px; font-weight: 700; width: 100%; }
-        .input-field { background: var(--bg3); color: var(--text); border: 1px solid var(--bg3); border-radius: var(--radius-sm); padding: 10px 12px; width: 100%; margin-bottom: 12px; }
-        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 520px; height: 68px; background: var(--bg2); border-top: 1px solid var(--bg3); display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
+        .btn-secondary { background: var(--bg3); color: var(--text); border-radius: var(--radius-sm); padding: 10px 18px; width: 100%; }
+        .btn-danger { background: var(--danger); color: white; border-radius: var(--radius-sm); padding: 8px 12px; font-size: 0.85rem; }
+        .btn-icon { background: var(--bg3); color: var(--text); width: 36px; height: 36px; border-radius: 50%; padding: 0; }
+        .input-field { background: var(--bg3); color: var(--text); border: 1px solid var(--bg3); border-radius: var(--radius-sm); padding: 10px 12px; width: 100%; font-family: var(--font); margin-bottom: 12px; }
+        .input-field:focus { border-color: var(--primary-light); outline: none; }
+        label { display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--text2); }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 520px; height: 68px; background: var(--bg2);
+            border-top: 1px solid var(--bg3); display: flex; justify-content: space-around; align-items: center;
+            z-index: 1000;
+        }
         .nav-item { color: var(--text3); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 0.68rem; text-decoration: none; flex: 1; cursor: pointer; }
         .nav-item.active { color: var(--primary-light); }
+        .nav-item span:first-child { font-size: 1.4rem; }
+
+        /* Header */
         header { padding: 20px 16px; display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary-light); }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
-        .modal { background: var(--bg2); width: 100%; max-width: 400px; border-radius: var(--radius); padding: 24px; border: 1px solid var(--bg3); }
-        .toast { position: fixed; top: 16px; right: 16px; padding: 12px 16px; border-radius: var(--radius-sm); z-index: 9999; color: white; }
+        .user-badge { font-size: 0.8rem; color: var(--text2); background: var(--bg2); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--bg3); }
+
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
+        .stat-card { background: var(--bg2); padding: 12px; border-radius: var(--radius); border: 1px solid var(--bg3); text-align: center; }
+        .stat-value { font-size: 1.5rem; font-weight: 800; color: var(--primary-light); }
+        .stat-label { font-size: 0.75rem; color: var(--text2); }
+
+        /* Reminders */
+        .reminder-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--bg3); }
+        .reminder-item:last-child { border-bottom: none; }
+        .reminder-info h4 { font-size: 0.95rem; font-weight: 600; }
+        .reminder-info p { font-size: 0.75rem; color: var(--text2); }
+        .badge { font-size: 0.8rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+        .badge-urgent { background: rgba(239,68,68,0.2); color: var(--danger); }
+        .badge-soon { background: rgba(245,158,11,0.2); color: var(--warning); }
+        .badge-later { background: rgba(16,185,129,0.2); color: var(--success); }
+
+        /* Subjects */
+        .subject-card { position: relative; overflow: hidden; }
+        .subject-color-bar { position: absolute; top: 0; right: 0; width: 6px; height: 100%; }
+        .subject-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .subject-title { font-weight: 700; font-size: 1.1rem; }
+        .progress-container { height: 8px; background: var(--bg3); border-radius: 4px; margin: 10px 0; overflow: hidden; }
+        .progress-bar { height: 100%; background: var(--primary); transition: width 0.3s; }
+        .chapter-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 0.9rem; }
+        .checkbox { width: 20px; height: 20px; border: 2px solid var(--bg3); border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+        .checkbox.checked { background: var(--success); border-color: var(--success); }
+        .checkbox.checked::after { content: '✓'; color: white; font-size: 12px; font-weight: bold; }
+        .chapter-name.done { text-decoration: line-through; color: var(--text3); }
+
+        /* Habits */
+        .habit-progress-banner { background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 16px; border-radius: var(--radius); margin-bottom: 16px; text-align: center; }
+        .habit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin-top: 12px; }
+        .habit-time-btn { background: var(--bg3); border: 1px solid transparent; padding: 8px; border-radius: var(--radius-sm); font-size: 0.8rem; text-align: center; cursor: pointer; }
+        .habit-time-btn.done { background: rgba(16,185,129,0.2); border-color: var(--success); color: var(--success); }
+
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
+        .modal { background: var(--bg2); width: 100%; max-width: 400px; border-radius: var(--radius); padding: 24px; border: 1px solid var(--bg3); max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-title { font-weight: 800; font-size: 1.2rem; }
+
+        /* Toast */
+        .toast { position: fixed; top: 16px; right: 16px; padding: 12px 16px; border-radius: var(--radius-sm); font-weight: 700; z-index: 9999; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .toast-success { background: var(--success); color: white; }
+        .toast-danger { background: var(--danger); color: white; }
+        .toast-warning { background: var(--warning); color: white; }
+        .toast-info { background: var(--primary); color: white; }
+
+        /* Color Picker */
+        .color-picker { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 16px; }
+        .color-option { height: 32px; border-radius: 4px; cursor: pointer; border: 2px solid transparent; }
+        .color-option.selected { border-color: white; }
+
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text3); }
+        .empty-state span { font-size: 3rem; display: block; margin-bottom: 16px; }
+        .login-banner { background: rgba(79,70,229,0.1); border: 1px dashed var(--primary); padding: 12px; border-radius: var(--radius-sm); text-align: center; font-size: 0.85rem; margin-bottom: 16px; color: var(--primary-light); }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo">مذاكرتي</div>
-        <div id="auth-header-info"></div>
-    </header>
+<header>
+    <div class="logo">مذاكرتي</div>
+    <div id="auth-header-info"></div>
+</header>
 
-    <div id="app-content" class="container">
-        </div>
+<div id="app-content" class="container"></div>
 
-    <nav class="bottom-nav">
-        <div class="nav-item active" onclick="navigate('home')"><span>🏠</span><span>الرئيسية</span></div>
-        <div class="nav-item" onclick="navigate('settings')"><span>⚙️</span><span>الإعدادات</span></div>
-    </nav>
+<nav class="bottom-nav">
+    <div class="nav-item active" onclick="navigate('home')"><span>🏠</span><span>الرئيسية</span></div>
+    <div class="nav-item" onclick="navigate('subjects')"><span>📚</span><span>المواد</span></div>
+    <div class="nav-item" onclick="navigate('reminders')"><span>🔔</span><span>التذكيرات</span></div>
+    <div class="nav-item" onclick="navigate('habits')"><span>🦷</span><span>عادات</span></div>
+</nav>
 
-    <div id="modal-overlay" class="modal-overlay" onclick="this.style.display='none'">
-        <div class="modal" onclick="event.stopPropagation()">
-            <div id="modal-content"></div>
-        </div>
-    </div>
+<div id="modal-overlay" class="modal-overlay" onclick="closeModalIfOverlay(event)">
+    <div class="modal" onclick="event.stopPropagation()"><div id="modal-content"></div></div>
+</div>
+<div id="toast-container"></div>
 
-    <script>
-        // --- 1. إعدادات Supabase (استبدل القيم بمفاتيحك) ---
-        const SUPABASE_URL = 'https://llumspntrtdgwmodpmyc.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_FXUJGp0pX57KCkdMyQWj5A_xEbKkIfD';
-        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+<script>
+    // -------------------- Supabase Config --------------------
+    const SUPABASE_URL = 'https://llumspntrtdgwmodpmyc.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_FXUJGp0pX57KCkdMyQWj5A_xEbKkIfD';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let state = {
-            user: null,
-            script_url: '',
-            subjects: JSON.parse(localStorage.getItem('mz5-s')) || []
-        };
+    const STORAGE_KEYS = {
+        subjects: 'mthakrti_subjects',
+        reminders: 'mthakrti_reminders',
+        habits: 'mthakrti_habits',
+        habitLogs: 'mthakrti_habitLogs',
+        gasConfig: 'mthakrti_gasConfig'
+    };
+    const SUBJECT_COLORS = ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#8b5cf6', '#f97316', '#14b8a6', '#6366f1'];
 
-        // --- 2. إدارة الدخول ---
-        async function checkUser() {
-            const { data: { session } } = await sb.auth.getSession();
-            state.user = session?.user || null;
-            if (state.user) await loadUserConfig();
-            updateUI();
+    // -------------------- App State --------------------
+    let state = {
+        currentPage: 'home',
+        user: null,
+        subjects: [],
+        reminders: [],
+        habits: [],
+        habitLogs: {},
+        gasConfig: { url: '', secret: '' },
+
+        save() {
+            localStorage.setItem(STORAGE_KEYS.subjects, JSON.stringify(this.subjects));
+            localStorage.setItem(STORAGE_KEYS.reminders, JSON.stringify(this.reminders));
+            localStorage.setItem(STORAGE_KEYS.habits, JSON.stringify(this.habits));
+            localStorage.setItem(STORAGE_KEYS.habitLogs, JSON.stringify(this.habitLogs));
+            localStorage.setItem(STORAGE_KEYS.gasConfig, JSON.stringify(this.gasConfig));
+        },
+        loadFromLocal() {
+            this.subjects = JSON.parse(localStorage.getItem(STORAGE_KEYS.subjects)) || [];
+            this.reminders = JSON.parse(localStorage.getItem(STORAGE_KEYS.reminders)) || [];
+            this.habits = JSON.parse(localStorage.getItem(STORAGE_KEYS.habits)) || [
+                { id: 'default-1', name: '🦷 تفريش الأسنان', times: ['07:30', '22:00'] }
+            ];
+            this.habitLogs = JSON.parse(localStorage.getItem(STORAGE_KEYS.habitLogs)) || {};
+            this.gasConfig = JSON.parse(localStorage.getItem(STORAGE_KEYS.gasConfig)) || { url: '', secret: '' };
+        },
+        getPackage() {
+            return { subjects: this.subjects, reminders: this.reminders, habits: this.habits, habitLogs: this.habitLogs };
+        },
+        applyPackage(pkg) {
+            if (!pkg) return;
+            this.subjects = pkg.subjects || [];
+            this.reminders = pkg.reminders || [];
+            this.habits = (pkg.habits && pkg.habits.length) ? pkg.habits : [{ id: 'default-1', name: '🦷 تفريش الأسنان', times: ['07:30', '22:00'] }];
+            // merge habit logs without overwriting today's local
+            const today = new Date().toISOString().split('T')[0];
+            const localToday = this.habitLogs[today] || {};
+            this.habitLogs = pkg.habitLogs || {};
+            if (Object.keys(localToday).length) this.habitLogs[today] = localToday;
         }
+    };
 
-        async function loadUserConfig() {
-            const { data, error } = await sb
-                .from('user_configs')
-                .select('script_url')
-                .eq('user_id', state.user.id)
-                .single();
-            if (data) state.script_url = data.script_url;
+    // -------------------- Helpers --------------------
+    function showToast(msg, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerText = msg;
+        document.getElementById('toast-container').appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+    function closeModalIfOverlay(e) { if (e.target === e.currentTarget) closeModal(); }
+    function showModal(html) {
+        document.getElementById('modal-content').innerHTML = html;
+        document.getElementById('modal-overlay').style.display = 'flex';
+    }
+
+    // -------------------- Auth UI --------------------
+    function updateAuthUI() {
+        const headerInfo = document.getElementById('auth-header-info');
+        if (state.user) {
+            headerInfo.innerHTML = `<div style="display:flex; gap:8px;"><span class="user-badge">${state.user.email}</span><button class="btn btn-icon" onclick="handleLogout()" title="خروج">🚪</button></div>`;
+        } else {
+            headerInfo.innerHTML = `<button class="btn btn-primary" style="width:auto; padding:6px 12px;" onclick="openAuthModal()">دخول</button>`;
         }
+    }
 
-        async function saveConfig() {
-            const url = document.getElementById('script-url-input').value;
-            const { error } = await sb
-                .from('user_configs')
-                .upsert({ user_id: state.user.id, script_url: url });
-            
-            if (!error) {
-                state.script_url = url;
-                alert('تم الحفظ بنجاح!');
-            }
-        }
-
-        // --- 3. نظام المزامنة الذكي ---
-        async function syncSchedule() {
-            if (!state.user || !state.script_url) {
-                alert('يرجى تسجيل الدخول وإضافة رابط Script URL أولاً');
-                return;
-            }
-
-            // جلب البيانات من الداتا بيس للتأكد أننا نستخدم أحدث رابط
-            await loadUserConfig();
-
-            alert('جاري إرسال البيانات للرابط الخاص بك...');
-            
-            fetch(state.script_url, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(state.subjects)
-            }).then(() => alert('تمت المزامنة مع تقويمك!'));
-        }
-
-        // --- 4. الواجهات ---
-        function updateUI() {
-            const authInfo = document.getElementById('auth-header-info');
-            if (state.user) {
-                authInfo.innerHTML = `<span style="font-size:0.8rem">${state.user.email}</span>`;
-                renderHome();
-            } else {
-                authInfo.innerHTML = `<button class="btn btn-primary" onclick="showAuthModal()">دخول</button>`;
-                document.getElementById('app-content').innerHTML = '<p style="text-align:center">يرجى تسجيل الدخول لحفظ بياناتك</p>';
-            }
-        }
-
-        function renderHome() {
-            document.getElementById('app-content').innerHTML = `
-                <div class="card">
-                    <h3>أهلاً بك في نظامك الخاص</h3>
-                    <p>لديك ${state.subjects.length} مواد مسجلة.</p>
-                    <button class="btn btn-primary" style="margin-top:15px" onclick="syncSchedule()">🚀 مزامنة المواعيد الآن</button>
+    function openAuthModal() {
+        showModal(`
+            <div class="modal-header"><div class="modal-title">تسجيل الدخول</div><button class="btn btn-icon" onclick="closeModal()">✕</button></div>
+            <div id="auth-form">
+                <p style="font-size:0.75rem; margin-bottom:12px;">قد يصلك بريد تأكيد</p>
+                <label>البريد الإلكتروني</label><input type="email" id="auth-email" class="input-field" placeholder="example@mail.com">
+                <label>كلمة المرور</label><input type="password" id="auth-password" class="input-field" placeholder="••••••••">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+                    <button class="btn btn-primary" onclick="handleLogin()">دخول</button>
+                    <button class="btn btn-secondary" onclick="handleSignUp()">تسجيل جديد</button>
                 </div>
-            `;
-        }
+            </div>
+        `);
+    }
 
-        function navigate(page) {
-            if (page === 'settings') {
-                document.getElementById('app-content').innerHTML = `
-                    <div class="card">
-                        <h3>إعدادات الربط</h3>
-                        <label>Google Apps Script URL</label>
-                        <input type="text" id="script-url-input" class="input-field" value="${state.script_url}" placeholder="https://script.google.com/...">
-                        <button class="btn btn-primary" onclick="saveConfig()">حفظ الإعدادات</button>
-                    </div>
-                `;
-            } else { renderHome(); }
-        }
+    async function handleLogin() {
+        const email = document.getElementById('auth-email').value.trim();
+        const password = document.getElementById('auth-password').value;
+        if (!email || !password) return showToast('يرجى ملء الحقول', 'warning');
+        const { error } = await sb.auth.signInWithPassword({ email, password });
+        if (error) return showToast(error.message, 'danger');
+        showToast('تم الدخول بنجاح', 'success');
+        closeModal();
+    }
 
-        function showAuthModal() {
-            document.getElementById('modal-overlay').style.display = 'flex';
-            document.getElementById('modal-content').innerHTML = `
-                <h2>تسجيل الدخول</h2>
-                <input type="email" id="email" class="input-field" placeholder="الإيميل">
-                <input type="password" id="pass" class="input-field" placeholder="كلمة السر">
-                <button class="btn btn-primary" onclick="handleAuth()">دخول / تسجيل</button>
-            `;
+    async function handleSignUp() {
+        const email = document.getElementById('auth-email').value.trim();
+        const password = document.getElementById('auth-password').value;
+        if (!email || !password) return showToast('يرجى ملء الحقول', 'warning');
+        const { error } = await sb.auth.signUp({ email, password });
+        if (error) {
+            if (error.status === 429 || error.message.includes('rate limit')) 
+                showToast('تم تجاوز الحد المسموح. انتظر ساعة', 'warning');
+            else showToast(error.message, 'danger');
+            return;
         }
+        showToast('تم إنشاء الحساب! تحقق من بريدك', 'success');
+        // auto login
+        const { error: loginErr } = await sb.auth.signInWithPassword({ email, password });
+        if (!loginErr) closeModal();
+    }
 
-        async function handleAuth() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('pass').value;
-            
-            // محاولة الدخول، إذا فشل يحاول التسجيل (ببساطة)
-            let { error } = await sb.auth.signInWithPassword({ email, password });
-            if (error) {
-                const { error: signUpError } = await sb.auth.signUp({ email, password });
-                if (signUpError) alert(signUpError.message);
-                else alert('تم إنشاء حساب! تحقق من بريدك');
+    async function handleLogout() { await sb.auth.signOut(); showToast('تم الخروج', 'info'); }
+
+    // -------------------- Cloud Sync --------------------
+    async function loadFromCloud() {
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) return;
+        const { data, error } = await sb.from('user_configs').select('*').eq('user_id', user.id).single();
+        if (error && error.code !== 'PGRST116') return console.error(error);
+        if (data) {
+            if (data.study_data) state.applyPackage(data.study_data);
+            if (data.script_url) {
+                try { state.gasConfig = JSON.parse(data.script_url); } catch { state.gasConfig = { url: data.script_url, secret: '' }; }
             }
-            
-            document.getElementById('modal-overlay').style.display = 'none';
-            checkUser();
+            state.save();
+        } else {
+            state.habits = [{ id: 'default-1', name: '🦷 تفريش الأسنان', times: ['07:30', '22:00'] }];
+            state.save();
         }
+    }
 
-        // ابدأ التشغيل
-        checkUser();
-    </script>
+    async function syncToCloud(silent = false) {
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) { openAuthModal(); return; }
+        if (!silent) showToast('جاري المزامنة...', 'info');
+        try {
+            cleanOldLogs();
+            const payload = { user_id: user.id, script_url: JSON.stringify(state.gasConfig), study_data: state.getPackage() };
+            const { error } = await sb.from('user_configs').upsert(payload, { onConflict: 'user_id' });
+            if (error) throw error;
+            // verification
+            const { data: verify } = await sb.from('user_configs').select('study_data').eq('user_id', user.id).single();
+            if (!verify) throw new Error('فشل التحقق');
+            if (!silent) showToast('تمت المزامنة ✅', 'success');
+        } catch (e) { if (!silent) showToast('فشل المزامنة: ' + e.message, 'danger'); }
+    }
+
+    function cleanOldLogs() {
+        const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
+        Object.keys(state.habitLogs).forEach(date => { if (new Date(date) < cutoff) delete state.habitLogs[date]; });
+    }
+
+    // -------------------- Navigation & Rendering --------------------
+    function navigate(page) {
+        state.currentPage = page;
+        document.querySelectorAll('.nav-item').forEach((item, idx) => item.classList.toggle('active', ['home','subjects','reminders','habits'][idx] === page));
+        renderAll();
+    }
+
+    function renderAll() {
+        const container = document.getElementById('app-content');
+        container.innerHTML = '';
+        if (!state.user && state.currentPage !== 'home') {
+            container.innerHTML = `<div class="empty-state"><span>🔒</span><p>يرجى تسجيل الدخول</p><button class="btn btn-primary" style="margin-top:20px;" onclick="openAuthModal()">دخول الآن</button></div>`;
+            return;
+        }
+        if (state.currentPage === 'home') renderHome(container);
+        else if (state.currentPage === 'subjects') renderSubjects(container);
+        else if (state.currentPage === 'reminders') renderReminders(container);
+        else if (state.currentPage === 'habits') renderHabits(container);
+    }
+
+    // -------------------- Home Page --------------------
+    function renderHome(container) {
+        if (!state.user) container.innerHTML = `<div class="login-banner">سجل دخولك لحفظ بياناتك في السحابة ☁️</div>`;
+        const totalChapters = state.subjects.reduce((a,s) => a + (s.chapters?.length || 0), 0);
+        const today = new Date().toISOString().split('T')[0];
+        let totalChecks = 0, doneChecks = 0;
+        state.habits.forEach(h => { totalChecks += h.times.length; doneChecks += (state.habitLogs[today]?.[h.id]?.length || 0); });
+        const habitPercent = totalChecks ? (doneChecks/totalChecks)*100 : 0;
+        container.innerHTML = `
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-value">${state.subjects.length}</div><div class="stat-label">مواد</div></div>
+                <div class="stat-card"><div class="stat-value">${state.reminders.length}</div><div class="stat-label">تذكيرات</div></div>
+                <div class="stat-card"><div class="stat-value">${state.habits.length}</div><div class="stat-label">عادات</div></div>
+                <div class="stat-card"><div class="stat-value">${totalChapters}</div><div class="stat-label">فصول</div></div>
+            </div>
+            <div class="card"><div class="section-title">📊 إنجاز العادات اليوم</div><div class="progress-container"><div class="progress-bar" style="width: ${habitPercent}%"></div></div><p style="text-align:center; font-size:0.8rem;">${doneChecks} من ${totalChecks} تم</p></div>
+            <div class="card"><div class="section-title">📅 تذكيرات قادمة</div><div id="upcoming-list"></div></div>
+            ${state.user ? `
+            <div class="card">
+                <div class="section-title">☁️ المزامنة والإعدادات</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+                    <button class="btn btn-primary" onclick="syncToCloud()">☁️ مزامنة السحاب</button>
+                    <button class="btn btn-secondary" onclick="openSyncModal()">📅 مزامنة التقويم</button>
+                </div>
+                <button class="btn btn-secondary" onclick="exportICS()" style="margin-bottom:16px;">📥 تصدير ICS</button>
+                <div><label>رابط Google Apps Script</label><input type="text" id="gas-url" class="input-field" value="${state.gasConfig.url || ''}" placeholder="https://script.google.com/..."></div>
+                <div><label>كلمة السر (Secret)</label><input type="password" id="gas-secret" class="input-field" value="${state.gasConfig.secret || ''}" placeholder="token123"></div>
+                <button class="btn btn-primary" onclick="saveGasConfig()">حفظ الإعدادات ✅</button>
+            </div>` : ''}
+        `;
+        renderUpcomingReminders();
+    }
+
+    function renderUpcomingReminders() {
+        const container = document.getElementById('upcoming-list');
+        if (!container) return;
+        const now = new Date(); now.setHours(0,0,0,0);
+        let stages = [];
+        state.reminders.forEach(rem => {
+            const generated = generateStages(rem.date, rem.type);
+            generated.forEach((st, idx) => {
+                const stageDate = new Date(st.date); stageDate.setHours(0,0,0,0);
+                if (stageDate >= now && (!rem.doneStages || !rem.doneStages.includes(idx))) {
+                    stages.push({ title: rem.name, stage: st.label, date: stageDate, diff: Math.ceil((stageDate-now)/(86400000)) });
+                }
+            });
+        });
+        stages.sort((a,b)=>a.date-b.date).slice(0,5);
+        if (!stages.length) { container.innerHTML = '<p style="text-align:center; color:var(--text3);">لا توجد تذكيرات قادمة</p>'; return; }
+        container.innerHTML = stages.map(s => {
+            let badge = s.diff <= 2 ? 'badge-urgent' : (s.diff <=5 ? 'badge-soon' : 'badge-later');
+            return `<div class="reminder-item"><div><h4>${s.title}</h4><p>${s.stage}</p></div><span class="badge ${badge}">${s.diff===0?'اليوم':s.diff+' يوم'}</span></div>`;
+        }).join('');
+    }
+
+    // -------------------- Subjects --------------------
+    function renderSubjects(container) {
+        if (!state.subjects.length) { container.innerHTML = '<div class="empty-state"><span>📚</span><p>لا توجد مواد بعد</p><button class="btn btn-primary" onclick="openSubjectModal()">+ أضف مادة</button></div>'; return; }
+        container.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:16px;"><div class="section-title" style="margin:0">موادي</div><button class="btn btn-primary" style="width:auto;" onclick="openSubjectModal()">+ مادة</button></div>`;
+        state.subjects.forEach(sub => {
+            const chapters = sub.chapters || [];
+            const doneCount = chapters.filter(c=>c.done).length;
+            const percent = chapters.length ? (doneCount/chapters.length)*100 : 0;
+            const subDiv = document.createElement('div');
+            subDiv.className = 'card subject-card';
+            subDiv.innerHTML = `
+                <div class="subject-color-bar" style="background:${sub.color || '#4f46e5'}"></div>
+                <div class="subject-header"><div><div class="subject-title">${sub.name}</div><div class="progress-container" style="width:100%; margin-top:8px;"><div class="progress-bar" style="width:${percent}%"></div></div><div style="font-size:0.7rem;">${doneCount}/${chapters.length} فصل</div></div><div><button class="btn btn-icon" onclick="openChapterModal('${sub.id}')">➕</button><button class="btn btn-icon" onclick="deleteSubject('${sub.id}')">🗑️</button></div></div>
+                <div id="chapters-${sub.id}">${chapters.map(ch => `<div class="chapter-item"><div class="checkbox ${ch.done?'checked':''}" onclick="toggleChapter('${sub.id}','${ch.id}')"></div><div class="chapter-name ${ch.done?'done':''}">${ch.name}</div><button class="btn btn-icon" style="width:24px;height:24px;" onclick="deleteChapter('${sub.id}','${ch.id}')">✕</button></div>`).join('')}</div>
+                ${!chapters.length ? '<p style="color:var(--text3); font-size:0.8rem;">لا توجد فصول، اضغط + للإضافة</p>' : ''}
+            `;
+            container.appendChild(subDiv);
+        });
+    }
+
+    function openSubjectModal() {
+        let colorHtml = SUBJECT_COLORS.map(c => `<div class="color-option" style="background:${c}" onclick="selectSubjectColor('${c}', this)"></div>`).join('');
+        showModal(`
+            <div class="modal-header"><div class="modal-title">➕ مادة جديدة</div><button class="btn btn-icon" onclick="closeModal()">✕</button></div>
+            <label>الاسم</label><input type="text" id="subj-name" class="input-field" placeholder="مثال: رياضيات">
+            <label>اللون</label><div class="color-picker" id="color-picker">${colorHtml}</div>
+            <button class="btn btn-primary" onclick="addSubject()">حفظ</button>
+        `);
+        window.selectedSubjectColor = SUBJECT_COLORS[0];
+        document.querySelectorAll('.color-option')[0]?.classList.add('selected');
+    }
+    function selectSubjectColor(color, el) { window.selectedSubjectColor = color; document.querySelectorAll('.color-option').forEach(c=>c.classList.remove('selected')); el.classList.add('selected'); }
+    function addSubject() {
+        let name = document.getElementById('subj-name').value.trim();
+        if (!name) return showToast('أدخل اسم المادة', 'warning');
+        state.subjects.push({ id: Date.now().toString(), name, color: window.selectedSubjectColor || SUBJECT_COLORS[0], chapters: [] });
+        state.save(); syncToCloud(true); closeModal(); renderAll();
+    }
+    function deleteSubject(id) { if(confirm('حذف المادة وجميع فصولها؟')){ state.subjects = state.subjects.filter(s=>s.id!==id); state.save(); syncToCloud(true); renderAll(); } }
+    function openChapterModal(subjectId) { window.currentSubjectId = subjectId; showModal(`<div class="modal-header"><div class="modal-title">📑 إضافة فصل</div><button class="btn btn-icon" onclick="closeModal()">✕</button></div><input type="text" id="chapter-name" class="input-field" placeholder="اسم الفصل"><button class="btn btn-primary" onclick="addChapter()">إضافة</button>`); }
+    function addChapter() { let name = document.getElementById('chapter-name')?.value.trim(); if(!name) return; let sub = state.subjects.find(s=>s.id===window.currentSubjectId); if(sub){ sub.chapters.push({ id: Date.now().toString(), name, done: false }); state.save(); syncToCloud(true); closeModal(); renderAll(); } }
+    function toggleChapter(subId, chId) { let sub = state.subjects.find(s=>s.id===subId); let ch = sub?.chapters.find(c=>c.id===chId); if(ch){ ch.done = !ch.done; state.save(); syncToCloud(true); renderAll(); } }
+    function deleteChapter(subId, chId) { let sub = state.subjects.find(s=>s.id===subId); if(sub){ sub.chapters = sub.chapters.filter(c=>c.id!==chId); state.save(); syncToCloud(true); renderAll(); } }
+
+    // -------------------- Reminders & Stages --------------------
+    function generateStages(mainDateISO, type) {
+        const main = new Date(mainDateISO);
+        const config = { exam: [14,7,3,1], quiz: [3,1], assignment: [7,3,1], other: [2] };
+        const days = config[type] || config.other;
+        return days.map(d => ({ label: d===1?'قبل يوم':`قبل ${d} أيام`, date: new Date(main.getTime() - d*86400000).toISOString() }));
+    }
+
+    function renderReminders(container) {
+        if (!state.reminders.length) { container.innerHTML = '<div class="empty-state"><span>🔔</span><p>لا توجد تذكيرات</p><button class="btn btn-primary" onclick="openReminderModal()">+ أضف تذكير</button></div>'; return; }
+        container.innerHTML = `<div style="display:flex; justify-content:space-between;"><div class="section-title" style="margin:0">التذكيرات</div><button class="btn btn-primary" style="width:auto;" onclick="openReminderModal()">+ تذكير</button></div>`;
+        state.reminders.forEach(rem => {
+            const sub = state.subjects.find(s=>s.id===rem.subjectId);
+            const stages = generateStages(rem.date, rem.type);
+            const doneStages = rem.doneStages || [];
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between;"><div><h3>${rem.name}</h3><p style="font-size:0.8rem;">${sub ? sub.name : 'بدون مادة'} | ${rem.type==='exam'?'امتحان':rem.type==='quiz'?'كويز':rem.type==='assignment'?'واجب':'أخرى'}</p><p style="font-size:0.75rem;">📅 ${new Date(rem.date).toLocaleDateString('ar-JO')}</p></div><button class="btn btn-danger" onclick="deleteReminder('${rem.id}')">حذف</button></div>
+                <div class="timeline">${stages.map((st,idx)=>`<div class="stage-item"><div class="checkbox small" style="width:18px;height:18px;" onclick="toggleReminderStage('${rem.id}',${idx})"></div><div>${st.label}</div><div class="stage-date">${new Date(st.date).toLocaleDateString('ar-JO')}</div>${doneStages.includes(idx)?'✅':''}</div>`).join('')}</div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function openReminderModal() {
+        const subjectsHtml = `<select id="rem-subject" class="input-field"><option value="">بدون مادة</option>${state.subjects.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select>`;
+        showModal(`
+            <div class="modal-header"><div class="modal-title">🔔 تذكير جديد</div><button class="btn btn-icon" onclick="closeModal()">✕</button></div>
+            <label>العنوان</label><input type="text" id="rem-name" class="input-field" placeholder="امتحان نهائي">
+            <label>النوع</label><select id="rem-type" class="input-field" onchange="updateReminderStagesPreview()"><option value="exam">امتحان</option><option value="quiz">كويز</option><option value="assignment">واجب</option><option value="other">أخرى</option></select>
+            <label>المادة</label>${subjectsHtml}
+            <label>التاريخ والوقت</label><input type="datetime-local" id="rem-date" class="input-field">
+            <div id="stages-preview" style="background:var(--bg3); border-radius:8px; padding:8px; margin-bottom:12px; font-size:0.8rem;"></div>
+            <button class="btn btn-primary" onclick="addReminder()">حفظ</button>
+        `);
+        const now = new Date(); now.setDate(now.getDate()+7); now.setHours(9,0,0);
+        document.getElementById('rem-date').value = now.toISOString().slice(0,16);
+        updateReminderStagesPreview();
+    }
+    function updateReminderStagesPreview() {
+        let type = document.getElementById('rem-type')?.value || 'exam';
+        let date = document.getElementById('rem-date')?.value;
+        if(!date) return;
+        let stages = generateStages(date, type);
+        document.getElementById('stages-preview').innerHTML = stages.map(s=>`<div>📌 ${s.label} - ${new Date(s.date).toLocaleDateString('ar-JO')}</div>`).join('');
+    }
+    function addReminder() {
+        let name = document.getElementById('rem-name').value.trim();
+        let type = document.getElementById('rem-type').value;
+        let date = document.getElementById('rem-date').value;
+        let subjectId = document.getElementById('rem-subject').value;
+        if(!name || !date) return showToast('أدخل الاسم والتاريخ', 'warning');
+        state.reminders.push({ id: Date.now().toString(), name, type, date, subjectId: subjectId || null, doneStages: [] });
+        state.save(); syncToCloud(true); closeModal(); renderAll();
+    }
+    function deleteReminder(id) { state.reminders = state.reminders.filter(r=>r.id!==id); state.save(); syncToCloud(true); renderAll(); }
+    function toggleReminderStage(remId, idx) {
+        let rem = state.reminders.find(r=>r.id===remId);
+        if(rem) { if(!rem.doneStages) rem.doneStages = []; if(rem.doneStages.includes(idx)) rem.doneStages = rem.doneStages.filter(i=>i!==idx); else rem.doneStages.push(idx); state.save(); syncToCloud(true); renderAll(); }
+    }
+
+    // -------------------- Habits --------------------
+    function renderHabits(container) {
+        const today = new Date().toISOString().split('T')[0];
+        let total=0, done=0;
+        state.habits.forEach(h=>{ total+=h.times.length; done+=(state.habitLogs[today]?.[h.id]?.length||0); });
+        container.innerHTML = `<div class="habit-progress-banner"><h3>إنجاز العادات اليومية</h3><div class="progress-container" style="background:rgba(0,0,0,0.3);"><div class="progress-bar" style="width:${total? (done/total)*100:0}%"></div></div><p>${done}/${total} مكتمل</p></div><div style="display:flex; justify-content:space-between;"><div class="section-title" style="margin:0">عاداتي</div><button class="btn btn-primary" style="width:auto;" onclick="openHabitModal()">+ عادة</button></div>`;
+        state.habits.forEach(habit => {
+            const habitDiv = document.createElement('div');
+            habitDiv.className = 'card';
+            habitDiv.innerHTML = `<div style="display:flex; justify-content:space-between;"><div><h3>${habit.name}</h3></div><button class="btn btn-danger" onclick="deleteHabit('${habit.id}')">حذف</button></div><div class="habit-grid" id="habit-${habit.id}"></div>`;
+            const grid = habitDiv.querySelector(`.habit-grid`);
+            habit.times.forEach((time, idx) => {
+                const isDone = state.habitLogs[today]?.[habit.id]?.includes(idx);
+                const btn = document.createElement('div');
+                btn.className = `habit-time-btn ${isDone ? 'done' : ''}`;
+                btn.innerText = time;
+                btn.onclick = () => toggleHabitCheck(habit.id, idx);
+                grid.appendChild(btn);
+            });
+            container.appendChild(habitDiv);
+        });
+        if(!state.habits.length) container.innerHTML += '<div class="empty-state"><span>🦷</span><p>أضف عادة جديدة</p></div>';
+    }
+
+    function openHabitModal() {
+        showModal(`
+            <div class="modal-header"><div class="modal-title">🦷 عادة جديدة</div><button class="btn btn-icon" onclick="closeModal()">✕</button></div>
+            <label>الاسم</label><input type="text" id="habit-name" class="input-field" placeholder="مثال: شرب الماء">
+            <label>الأوقات</label><div id="habit-times-list"></div>
+            <div style="display:flex; gap:8px;"><input type="time" id="habit-time-input" class="input-field"><button class="btn btn-secondary" onclick="addHabitTimeInput()">+ إضافة وقت</button></div>
+            <button class="btn btn-primary" style="margin-top:16px;" onclick="saveNewHabit()">حفظ</button>
+        `);
+        window.newHabitTimes = [];
+        renderHabitTimesList();
+    }
+    function renderHabitTimesList() { let div = document.getElementById('habit-times-list'); if(!div) return; div.innerHTML = window.newHabitTimes.map((t,i)=>`<div style="display:flex; gap:8px; margin-bottom:6px;"><span>🕐 ${t}</span><button class="btn btn-danger btn-sm" onclick="removeHabitTime(${i})">✕</button></div>`).join(''); if(!window.newHabitTimes.length) div.innerHTML = '<p style="color:var(--text3);">لا توجد أوقات</p>'; }
+    function addHabitTimeInput() { let time = document.getElementById('habit-time-input').value; if(!time) return showToast('اختر وقتاً','warning'); if(window.newHabitTimes.includes(time)) return showToast('الوقت موجود','warning'); window.newHabitTimes.push(time); window.newHabitTimes.sort(); renderHabitTimesList(); document.getElementById('habit-time-input').value=''; }
+    function removeHabitTime(i) { window.newHabitTimes.splice(i,1); renderHabitTimesList(); }
+    function saveNewHabit() { let name = document.getElementById('habit-name').value.trim(); if(!name) return showToast('أدخل اسم العادة','warning'); if(!window.newHabitTimes.length) return showToast('أضف وقتاً واحداً على الأقل','warning'); state.habits.push({ id: Date.now().toString(), name, times: [...window.newHabitTimes] }); state.save(); syncToCloud(true); closeModal(); renderAll(); }
+    function deleteHabit(id) { if(confirm('حذف العادة؟')){ state.habits = state.habits.filter(h=>h.id!==id); delete state.habitLogs[id]; state.save(); syncToCloud(true); renderAll(); } }
+    function toggleHabitCheck(habitId, timeIdx) { let today = new Date().toISOString().split('T')[0]; if(!state.habitLogs[today]) state.habitLogs[today] = {}; if(!state.habitLogs[today][habitId]) state.habitLogs[today][habitId] = []; let arr = state.habitLogs[today][habitId]; let pos = arr.indexOf(timeIdx); if(pos===-1) arr.push(timeIdx); else arr.splice(pos,1); state.save(); syncToCloud(true); renderAll(); }
+
+    // -------------------- ICS Export & Google Calendar Sync --------------------
+    function exportICS() {
+        let lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//مذاكرتي//AR'];
+        state.reminders.forEach(rem => {
+            let start = new Date(rem.date);
+            let end = new Date(start.getTime() + 60*60000);
+            lines.push('BEGIN:VEVENT',`UID:${rem.id}@mz`,`DTSTART:${toICS(start)}`,`DTEND:${toICS(end)}`,`SUMMARY:${rem.name}`,`DESCRIPTION:تذكير من مذاكرتي`,'END:VEVENT');
+            let stages = generateStages(rem.date, rem.type);
+            stages.forEach((st,i) => { let d = new Date(st.date); lines.push('BEGIN:VEVENT',`UID:${rem.id}_stage${i}`,`DTSTART;VALUE=DATE:${d.toISOString().slice(0,10).replace(/-/g,'')}`,`SUMMARY:${st.label} - ${rem.name}`,'END:VEVENT'); });
+        });
+        state.habits.forEach(h => { h.times.forEach((t,ti) => { let [hh,mm]=t.split(':'); let dt=new Date(); dt.setHours(hh,mm,0,0); lines.push('BEGIN:VEVENT',`UID:habit_${h.id}_${ti}`,`DTSTART;TZID=Asia/Amman:${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}T${hh}${mm}00`,`RRULE:FREQ=DAILY`,`SUMMARY:🦷 ${h.name}`,'END:VEVENT'); });
+        });
+        lines.push('END:VCALENDAR');
+        let blob = new Blob([lines.join('\r\n')],{type:'text/calendar'});
+        let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'مذاكرتي.ics'; a.click(); URL.revokeObjectURL(a.href);
+        showToast('تم تصدير ICS', 'success');
+    }
+    function toICS(d) { return d.toISOString().replace(/[-:]/g,'').slice(0,15)+'Z'; }
+
+    function saveGasConfig() {
+        let url = document.getElementById('gas-url').value.trim();
+        let secret = document.getElementById('gas-secret').value.trim();
+        state.gasConfig = { url, secret };
+        state.save(); syncToCloud(true);
+        showToast('تم حفظ إعدادات التقويم', 'success');
+    }
+    function openSyncModal() {
+        showModal(`
+            <div class="modal-header"><div class="modal-title">مزامنة التقويم</div><button class="btn btn-icon" onclick="closeModal()">✕</button></div>
+            <p style="margin-bottom:12px;">سيتم إرسال التذكيرات والمراحل إلى تقويم Google</p>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <button class="btn btn-primary" onclick="syncReminderToCalendar()">مزامنة التذكيرات</button>
+                <button class="btn btn-secondary" onclick="syncHabitsToCalendar()">مزامنة العادات</button>
+            </div>
+        `);
+    }
+    async function syncReminderToCalendar() { await sendToGAS('reminders'); }
+    async function syncHabitsToCalendar() { await sendToGAS('habits'); }
+    async function sendToGAS(type) {
+        if(!state.gasConfig.url) { showToast('يرجى حفظ رابط GAS أولاً', 'warning'); closeModal(); return; }
+        let events = [];
+        if(type === 'reminders') {
+            state.reminders.forEach(rem => {
+                let start = new Date(rem.date);
+                events.push({ title: rem.name, startTime: start.toISOString(), durationMinutes: 60, description: 'تذكير من مذاكرتي' });
+                let stages = generateStages(rem.date, rem.type);
+                stages.forEach(st => { let d = new Date(st.date); events.push({ title: `${st.label} - ${rem.name}`, startTime: d.toISOString(), durationMinutes: 30, description: 'مرحلة تحضيرية' }); });
+            });
+        } else {
+            let today = new Date().toISOString().split('T')[0];
+            state.habits.forEach(h => {
+                h.times.forEach(t => { let [hh,mm]=t.split(':'); let dt=new Date(); dt.setHours(hh,mm,0,0); events.push({ title: `🦷 ${h.name}`, startTime: dt.toISOString(), durationMinutes: 15, description: 'عادة يومية' }); });
+            });
+        }
+        for(let ev of events) {
+            let payload = { title: ev.title, startTime: ev.startTime, durationMinutes: ev.durationMinutes, description: ev.description, secret: state.gasConfig.secret };
+            try { await fetch(state.gasConfig.url, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } }); } catch(e) { console.warn(e); }
+        }
+        showToast(`تم إرسال ${events.length} حدث إلى التقويم`, 'success');
+        closeModal();
+    }
+
+    // -------------------- Notifications --------------------
+    function requestNotificationPermission() { if('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); }
+    function startNotificationCheck() {
+        setInterval(() => {
+            if(Notification.permission !== 'granted') return;
+            let now = new Date();
+            let timeStr = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+            let today = new Date().toISOString().split('T')[0];
+            state.habits.forEach(h => { h.times.forEach((t,idx) => { if(t === timeStr && !(state.habitLogs[today]?.[h.id]?.includes(idx))) new Notification('مذاكرتي', { body: `حان وقت: ${h.name}` }); }); });
+        }, 60000);
+    }
+
+    // -------------------- Init --------------------
+    async function init() {
+        state.loadFromLocal();
+        const { data: { session } } = await sb.auth.getSession();
+        if (session) { state.user = session.user; await loadFromCloud(); }
+        updateAuthUI();
+        renderAll();
+        requestNotificationPermission();
+        startNotificationCheck();
+    }
+    init();
+
+    // expose globals
+    window.navigate = navigate; window.openAuthModal = openAuthModal; window.handleLogin = handleLogin; window.handleSignUp = handleSignUp; window.handleLogout = handleLogout;
+    window.syncToCloud = syncToCloud; window.openSubjectModal = openSubjectModal; window.addSubject = addSubject; window.deleteSubject = deleteSubject; window.openChapterModal = openChapterModal; window.addChapter = addChapter; window.toggleChapter = toggleChapter; window.deleteChapter = deleteChapter; window.selectSubjectColor = selectSubjectColor;
+    window.openReminderModal = openReminderModal; window.addReminder = addReminder; window.deleteReminder = deleteReminder; window.toggleReminderStage = toggleReminderStage; window.updateReminderStagesPreview = updateReminderStagesPreview;
+    window.openHabitModal = openHabitModal; window.addHabitTimeInput = addHabitTimeInput; window.removeHabitTime = removeHabitTime; window.saveNewHabit = saveNewHabit; window.deleteHabit = deleteHabit; window.toggleHabitCheck = toggleHabitCheck;
+    window.exportICS = exportICS; window.saveGasConfig = saveGasConfig; window.openSyncModal = openSyncModal; window.syncReminderToCalendar = syncReminderToCalendar; window.syncHabitsToCalendar = syncHabitsToCalendar;
+    window.closeModal = closeModal; window.closeModalIfOverlay = closeModalIfOverlay;
+</script>
 </body>
 </html>
