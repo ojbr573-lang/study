@@ -257,6 +257,40 @@
     <div id="toast-container"></div>
 
     <script>
+        /*
+          ===== تعليمات تحديث GAS Script =====
+          
+          لكي تعمل مزامنة التقويم بشكل صحيح، يجب أن يكون GAS script كالتالي:
+          
+          function doPost(e) {
+            try {
+              var data = JSON.parse(e.postData.contents);
+              var SECRET = "YOUR_SECRET_HERE"; // غيّرها
+              if (data.secret !== SECRET) return respond({result:'error',error:'Unauthorized'});
+              
+              var startTime = new Date(data.startTime);
+              var endTime = new Date(startTime.getTime() + (data.durationMinutes||60)*60000);
+              var calendar = CalendarApp.getDefaultCalendar();
+              var event = calendar.createEvent(data.title, startTime, endTime, {
+                description: data.description || 'مذاكرتي'
+              });
+              event.addPopupReminder(data.reminderMinutes || 10);
+              return respond({result:'success'});
+            } catch(err) {
+              return respond({result:'error', error:err.toString()});
+            }
+          }
+          function respond(obj) {
+            return ContentService
+              .createTextOutput(JSON.stringify(obj))
+              .setMimeType(ContentService.MimeType.JSON);
+          }
+          
+          ملاحظة: بسبب CORS، نستخدم mode:'no-cors' في الـ fetch
+          يعني الطلب يصل لـ GAS لكن لا نقدر نقرأ الـ response
+          تحقق من تقويم Google مباشرة للتأكد من وصول الأحداث
+        */
+
         // ===== الإعدادات الثابتة =====
         const SUPABASE_URL = 'https://llumspntrtdgwmodpmyc.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_FXUJGp0pX57KCkdMyQWj5A_xEbKkIfD';
@@ -327,6 +361,17 @@
                 }
             }
         };
+
+        // ===== FIX 5: Habit Logs Cleanup =====
+        function cleanOldLogs() {
+            const cutoff = new Date();
+            cutoff.setDate(cutoff.getDate() - 30);
+            Object.keys(state.habitLogs).forEach(date => {
+                if (new Date(date) < cutoff) {
+                    delete state.habitLogs[date];
+                }
+            });
+        }
 
         // ===== تهيئة التطبيق =====
         async function init() {
@@ -407,12 +452,19 @@
             }
         }
 
-        async function syncToCloud() {
+        // ===== FIX 2: Silent Sync Parameter =====
+        async function syncToCloud(silent = false) {
             const { data: { user } } = await sb.auth.getUser();
             if (!user) { openAuthModal(); return; }
 
-            showToast('جاري المزامنة...', 'info');
+            // ===== FIX 3: Verification =====
+            // syncToCloud does NOT call renderAll() to avoid flicker.
+            
+            if (!silent) showToast('جاري المزامنة...', 'info');
             try {
+                // ===== FIX 5: Call Cleanup =====
+                cleanOldLogs();
+
                 const payload = {
                     user_id: user.id,
                     script_url: JSON.stringify(state.gasConfig),
@@ -434,10 +486,10 @@
 
                 if (verifyError || !verify) throw new Error('فشل التحقق من الحفظ السحابي');
 
-                showToast('تمت المزامنة وتم التحقق منها ✅', 'success');
+                if (!silent) showToast('تمت المزامنة ✅', 'success');
             } catch (e) {
                 console.error('syncToCloud error:', e);
-                showToast('فشلت المزامنة: ' + e.message, 'danger');
+                if (!silent) showToast('فشلت المزامنة: ' + e.message, 'danger');
             }
         }
 
@@ -500,10 +552,10 @@
             try {
                 const { error } = await sb.auth.signUp({ email, password });
                 if (error) {
-                    // ===== FIX: Bug 1 =====
-                    if (error.message.toLowerCase().includes('rate limit') || 
-                        error.message.toLowerCase().includes('email') ||
-                        error.status === 429) {
+                    // ===== FIX 1: Rate Limit Check =====
+                    if (error.status === 429 || 
+                        error.message.toLowerCase().includes('rate limit') ||
+                        error.message.toLowerCase().includes('over_email_send_rate_limit')) {
                         showToast('تم تجاوز الحد المسموح. انتظر ساعة وحاول مجدداً', 'warning');
                     } else {
                         throw error;
@@ -721,7 +773,8 @@
         }
 
         function openAddSubjectModal() {
-            let selectedColor = SUBJECT_COLORS[0];
+            // ===== FIX 4: Set Immediately =====
+            window.tempSelectedColor = SUBJECT_COLORS[0];
             showModal(`
                 <div class="modal-header">
                     <div class="modal-title">إضافة مادة</div>
@@ -736,7 +789,6 @@
                 <button class="btn btn-primary" onclick="addSubject()">إضافة</button>
             `);
             document.querySelector('.color-option').classList.add('selected');
-            window.tempSelectedColor = selectedColor;
         }
 
         function selectColor(el, color) {
@@ -754,8 +806,8 @@
             state.save();
             closeModal();
             renderAll();
-            // ===== FIX: Bug 2 =====
-            await syncToCloud();
+            // ===== FIX 2: Silent Sync =====
+            await syncToCloud(true);
         }
 
         async function deleteSubject(id) {
@@ -763,8 +815,8 @@
                 state.subjects = state.subjects.filter(s => s.id !== id);
                 state.save();
                 renderAll();
-                // ===== FIX: Bug 2 =====
-                await syncToCloud();
+                // ===== FIX 2: Silent Sync =====
+                await syncToCloud(true);
             }
         }
 
@@ -786,8 +838,8 @@
                 state.save();
                 closeModal();
                 renderAll();
-                // ===== FIX: Bug 2 =====
-                await syncToCloud();
+                // ===== FIX 2: Silent Sync =====
+                await syncToCloud(true);
             }
         }
 
@@ -797,8 +849,8 @@
                 sub.chapters[idx].done = !sub.chapters[idx].done;
                 state.save();
                 renderAll();
-                // ===== FIX: Bug 2 =====
-                await syncToCloud();
+                // ===== FIX 2: Silent Sync =====
+                await syncToCloud(true);
             }
         }
 
@@ -888,8 +940,8 @@
             state.save();
             closeModal();
             renderAll();
-            // ===== FIX: Bug 2 =====
-            await syncToCloud();
+            // ===== FIX 2: Silent Sync =====
+            await syncToCloud(true);
         }
 
         async function deleteReminder(id) {
@@ -897,8 +949,8 @@
                 state.reminders = state.reminders.filter(r => r.id !== id);
                 state.save();
                 renderAll();
-                // ===== FIX: Bug 2 =====
-                await syncToCloud();
+                // ===== FIX 2: Silent Sync =====
+                await syncToCloud(true);
             }
         }
 
@@ -910,8 +962,8 @@
                 else rem.doneStages.push(idx);
                 state.save();
                 renderAll();
-                // ===== FIX: Bug 2 =====
-                await syncToCloud();
+                // ===== FIX 2: Silent Sync =====
+                await syncToCloud(true);
             }
         }
 
@@ -988,8 +1040,8 @@
             state.save();
             closeModal();
             renderAll();
-            // ===== FIX: Bug 2 =====
-            await syncToCloud();
+            // ===== FIX 2: Silent Sync =====
+            await syncToCloud(true);
         }
 
         async function deleteHabit(id) {
@@ -997,8 +1049,8 @@
                 state.habits = state.habits.filter(h => h.id !== id);
                 state.save();
                 renderAll();
-                // ===== FIX: Bug 2 =====
-                await syncToCloud();
+                // ===== FIX 2: Silent Sync =====
+                await syncToCloud(true);
             }
         }
 
@@ -1011,8 +1063,8 @@
             else state.habitLogs[today][habitId].push(timeIdx);
             state.save();
             renderAll();
-            // ===== FIX: Bug 2 =====
-            await syncToCloud();
+            // ===== FIX 2: Silent Sync =====
+            await syncToCloud(true);
         }
 
         // ===== إعدادات GAS =====
@@ -1031,62 +1083,154 @@
             await syncToCloud();
         }
 
+        // ===== FIX 6: GAS Sync Progress UI =====
         async function openSyncModal() {
-            if (!state.gasConfig.url) return showToast('يرجى ضبط رابط GAS أولاً في الإعدادات', 'warning');
+            if (!state.gasConfig.url) {
+                return showToast('يرجى ضبط رابط GAS أولاً في الإعدادات', 'warning');
+            }
+
+            const totalEvents = state.reminders.reduce((acc, rem) => {
+                return acc + generateStages(rem.date, rem.type).length;
+            }, 0) + state.habits.reduce((acc, h) => acc + h.times.length * 7, 0);
+
             showModal(`
-                <div class="modal-header"><div class="modal-title">مزامنة التقويم</div><button class="btn btn-icon" onclick="closeModal()">✕</button></div>
-                <p style="font-size:0.9rem; margin-bottom:16px;">سيتم إرسال كافة التذكيرات والمراحل القادمة إلى تقويم Google الخاص بك.</p>
-                <button class="btn btn-primary" onclick="syncToGoogleCalendar()">بدء المزامنة الآن 🚀</button>
+                <div class="modal-header">
+                    <div class="modal-title">📅 مزامنة تقويم Google</div>
+                    <button class="btn btn-icon" onclick="closeModal()">✕</button>
+                </div>
+                <div style="background:rgba(79,70,229,0.1);border:1px solid rgba(79,70,229,0.3);
+                            border-radius:8px;padding:12px;margin-bottom:16px;font-size:0.82rem;
+                            color:var(--text2);line-height:1.7;">
+                    📌 سيتم إرسال <strong style="color:var(--text)">${totalEvents} حدث</strong> 
+                    تقريباً إلى تقويم Google عبر GAS.<br>
+                    ⚠️ بسبب قيود المتصفح، لا يمكن التحقق من النجاح مباشرة — 
+                    تحقق من تقويمك بعد الإرسال.
+                </div>
+                <div id="sync-progress-container" style="display:none;margin-bottom:16px;">
+                    <div style="display:flex;justify-content:space-between;
+                                font-size:0.8rem;color:var(--text2);margin-bottom:6px;">
+                        <span>جاري الإرسال...</span>
+                        <span id="sync-progress-text">0 / ${totalEvents}</span>
+                    </div>
+                    <div style="height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;">
+                        <div id="sync-progress-bar" 
+                             style="height:100%;background:var(--primary);width:0%;transition:width 0.2s;">
+                        </div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;">
+                    <button id="sync-modal-btn" class="btn btn-primary" 
+                            style="flex:1" onclick="syncToGoogleCalendar()">
+                        🚀 ابدأ المزامنة (${totalEvents} حدث)
+                    </button>
+                    <button class="btn btn-secondary" style="flex:1" 
+                            onclick="exportICS()">
+                        📥 تصدير ICS بدلاً
+                    </button>
+                </div>
             `);
         }
 
         async function syncToGoogleCalendar() {
-            const btn = document.querySelector('.modal .btn-primary');
-            btn.disabled = true; btn.innerText = 'جاري الإرسال...';
-            
-            // ===== FIX: Bug 5 & Progress Counter =====
+            if (!state.gasConfig.url) {
+                showToast('يرجى حفظ رابط GAS أولاً', 'warning');
+                return;
+            }
+
+            const btn = document.querySelector('#sync-modal-btn');
+            if (btn) { btn.disabled = true; btn.innerText = 'جاري الإرسال...'; }
+
+            const now = new Date();
+            let events = [];
+
+            // جمع أحداث التذكيرات
+            state.reminders.forEach(rem => {
+                const stages = generateStages(rem.date, rem.type);
+                stages.forEach((s, idx) => {
+                    const stageDate = new Date(s.date);
+                    if (stageDate >= now && (!rem.doneStages || !rem.doneStages.includes(idx))) {
+                        events.push({
+                            title: `${rem.name} - ${s.label}`,
+                            startTime: s.date + 'T09:00:00',
+                            durationMinutes: 30,
+                            description: 'تذكير من تطبيق مذاكرتي',
+                            reminderMinutes: 30,
+                            secret: state.gasConfig.secret
+                        });
+                    }
+                });
+            });
+
+            // جمع أحداث العادات (7 أيام قادمة)
+            state.habits.forEach(h => {
+                h.times.forEach(t => {
+                    const [hh, mm] = t.split(':').map(Number);
+                    for (let i = 0; i < 7; i++) {
+                        const d = new Date();
+                        d.setDate(d.getDate() + i);
+                        d.setHours(hh, mm, 0, 0);
+                        events.push({
+                            title: `🦷 ${h.name}`,
+                            startTime: d.toISOString().slice(0, 19),
+                            durationMinutes: 15,
+                            description: 'عادة يومية - مذاكرتي',
+                            reminderMinutes: 10,
+                            secret: state.gasConfig.secret
+                        });
+                    }
+                });
+            });
+
+            if (events.length === 0) {
+                showToast('لا توجد أحداث للمزامنة', 'warning');
+                if (btn) btn.disabled = false;
+                return;
+            }
+
+            // Update modal to show progress
+            const progressContainer = document.getElementById('sync-progress-container');
+            if (progressContainer) progressContainer.style.display = 'block';
+
             let successCount = 0;
             let failedCount = 0;
 
-            try {
-                const now = new Date();
-                let events = [];
-                state.reminders.forEach(rem => {
-                    const stages = generateStages(rem.date, rem.type);
-                    stages.forEach(s => {
-                        if (new Date(s.date) >= now) {
-                            events.push({ title: `${rem.name} - ${s.label}`, startTime: s.date + 'T09:00:00', durationMinutes: 30, description: 'تذكير من تطبيق مذاكرتي', reminderMinutes: 60 });
-                        }
-                    });
-                });
+            // إرسال الأحداث بشكل تسلسلي مع تأخير لتجنب rate limit
+            for (let i = 0; i < events.length; i++) {
+                const ev = events[i];
+                
+                // Update progress
+                const progressEl = document.getElementById('sync-progress-text');
+                if (progressEl) progressEl.innerText = `${i + 1} / ${events.length}`;
+                const progressBar = document.getElementById('sync-progress-bar');
+                if (progressBar) progressBar.style.width = `${((i+1)/events.length)*100}%`;
 
-                for (const ev of events) {
-                    try {
-                        const response = await fetch(state.gasConfig.url, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                            body: JSON.stringify({ ...ev, secret: state.gasConfig.secret })
-                        });
-                        
-                        const result = await response.json();
-                        if (result.result === 'success') {
-                            successCount++;
-                        } else {
-                            throw new Error(result.error || 'GAS error');
-                        }
-                    } catch (err) {
-                        console.error('Event sync error:', err);
-                        failedCount++;
-                    }
+                try {
+                    // استخدام no-cors لأن GAS لا يدعم CORS headers
+                    await fetch(state.gasConfig.url, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(ev)
+                    });
+                    // مع no-cors لا يمكن قراءة الـ response لكن الطلب يصل لـ GAS
+                    successCount++;
+                } catch (err) {
+                    console.error('Failed to send event:', ev.title, err);
+                    failedCount++;
                 }
 
-                showToast(`تم: ${successCount} ✅ فشل: ${failedCount} ❌`, successCount > 0 ? 'success' : 'danger');
-                closeModal();
-            } catch (e) { 
-                showToast('فشل الاتصال بـ GAS', 'danger'); 
-            } finally { 
-                btn.disabled = false; 
+                // تأخير 200ms بين الطلبات
+                if (i < events.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
             }
+
+            if (btn) { btn.disabled = false; btn.innerText = 'إرسال مرة أخرى 🔄'; }
+            
+            showToast(
+                `تم الإرسال لـ GAS ✅ (${successCount} حدث) — تحقق من تقويمك`,
+                'success'
+            );
         }
 
         // ===== تصدير ICS =====
